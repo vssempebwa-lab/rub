@@ -1,23 +1,24 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { getDashboardPath } from '@/features/auth/utils/dashboard-path';
 import type { Profile } from '@/types';
 
-export function useAuth({ redirectTo = '/login' }: { redirectTo?: string } = {}) {
-  const router = useRouter();
+export function useSession() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
 
-    async function checkAuth() {
+    async function loadSession() {
       const { data: { session } } = await supabase.auth.getSession();
+
       if (!session) {
-        if (mounted) router.push(redirectTo);
+        if (mounted) {
+          setProfile(null);
+          setLoading(false);
+        }
         return;
       }
 
@@ -33,26 +34,29 @@ export function useAuth({ redirectTo = '/login' }: { redirectTo?: string } = {})
       }
     }
 
-    checkAuth();
+    loadSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        router.push(redirectTo);
-      }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      loadSession();
     });
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [redirectTo, router]);
+  }, []);
 
   async function signOut() {
     await supabase.auth.signOut();
-    router.push('/');
+    setProfile(null);
+    window.location.href = '/';
   }
 
-  return { profile, loading, signOut, role: profile?.role ?? 'client' };
+  return {
+    profile,
+    loading,
+    signOut,
+    role: profile?.role ?? null,
+    isAuthenticated: !!profile,
+  };
 }
-
-export { getDashboardPath };

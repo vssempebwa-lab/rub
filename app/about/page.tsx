@@ -4,31 +4,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Camera, Award, Heart, Users, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SiteHeader } from '@/components/layout/site-header';
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 lg:h-20">
-            <Link href="/" className="flex items-center gap-2">
-              <Camera className="h-6 w-6 text-primary" />
-              <span className="font-[family-name:var(--font-playfair)] text-xl font-bold">Rub Shoots</span>
-            </Link>
-            <nav className="hidden lg:flex items-center gap-8">
-              {['Home', 'About', 'Services', 'Portfolio', 'Pricing', 'Contact'].map((label) => (
-                <Link key={label} href={label === 'Home' ? '/' : `/${label.toLowerCase()}`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-                  {label}
-                </Link>
-              ))}
-            </nav>
-            <Link href="/login">
-              <Button variant="ghost" size="sm">Sign In</Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Hero */}
       <section className="relative py-24 lg:py-32 overflow-hidden">
@@ -44,7 +25,7 @@ export default function AboutPage() {
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center text-white">
           <h1 className="font-[family-name:var(--font-playfair)] text-4xl md:text-6xl font-bold mb-6">Our Story</h1>
           <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto">
-            Two decades of capturing joy, love, and life's most precious moments across Ghana and beyond.
+            Two decades of capturing joy, love, and life&apos;s most precious moments across Ghana and beyond.
           </p>
         </div>
       </section>
@@ -156,7 +137,7 @@ export default function AboutPage() {
             <Camera className="h-6 w-6 text-primary" />
             <span className="font-[family-name:var(--font-playfair)] text-xl font-bold">Rub Shoots</span>
           </div>
-          <p className="text-sm text-muted-foreground"> Rub Shoots Photography. All rights reserved.</p>
+          <p className="text-sm text-muted-foreground">Rub Shoots Photography. All rights reserved.</p>
         </div>
       </footer>
     </div>

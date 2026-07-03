@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {
   Camera, Heart, Star, ArrowRight, Calendar, MapPin, Phone, Mail,
-  ChevronRight, Instagram, Facebook, Twitter, Menu, X, Download,
+  ChevronRight, Instagram, Facebook, Twitter, Download,
   Eye, Users, Award, Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { SiteHeader } from '@/components/layout/site-header';
+import { SiteFooter } from '@/components/layout/site-footer';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
 
@@ -46,7 +48,6 @@ export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [featuredEvents, setFeaturedEvents] = useState<Event[]>([]);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [bookingForm, setBookingForm] = useState({
     client_name: '',
     client_email: '',
@@ -89,80 +90,38 @@ export default function HomePage() {
     }
   }
 
-  const navLinks = [
-    { label: 'Home', href: '/' },
-    { label: 'About', href: '/about' },
-    { label: 'Services', href: '/services' },
-    { label: 'Portfolio', href: '/portfolio' },
-    { label: 'Pricing', href: '/pricing' },
-    { label: 'Contact', href: '/contact' },
-  ];
+  const bookNowActions = (
+    <>
+      <Link href="/dashboard/photographer/upload">
+        <Button variant="outline" size="sm">Activate Client Delivery</Button>
+      </Link>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button size="sm">Book Now</Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>Book a Session</DialogTitle></DialogHeader>
+          <form onSubmit={handleBookingSubmit} className="space-y-4 mt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <Input placeholder="Your Name" value={bookingForm.client_name} onChange={e => setBookingForm({ ...bookingForm, client_name: e.target.value })} required />
+              <Input type="email" placeholder="Email" value={bookingForm.client_email} onChange={e => setBookingForm({ ...bookingForm, client_email: e.target.value })} required />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Input placeholder="Phone" value={bookingForm.client_phone} onChange={e => setBookingForm({ ...bookingForm, client_phone: e.target.value })} />
+              <Input type="date" value={bookingForm.event_date} onChange={e => setBookingForm({ ...bookingForm, event_date: e.target.value })} />
+            </div>
+            <Input placeholder="Event Type (Wedding, Portrait, etc.)" value={bookingForm.event_type} onChange={e => setBookingForm({ ...bookingForm, event_type: e.target.value })} />
+            <Textarea placeholder="Tell us about your event..." value={bookingForm.message} onChange={e => setBookingForm({ ...bookingForm, message: e.target.value })} />
+            <Button type="submit" className="w-full">Submit Booking</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 lg:h-20">
-            <Link href="/" className="flex items-center gap-2">
-              <Camera className="h-6 w-6 text-primary" />
-              <span className="font-[family-name:var(--font-playfair)] text-xl font-bold">Rub Shoots</span>
-            </Link>
-            <nav className="hidden lg:flex items-center gap-8">
-              {navLinks.map((link) => (
-                <Link key={link.href} href={link.href} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-            <div className="hidden lg:flex items-center gap-4">
-              <Link href="/login">
-                <Button variant="ghost" size="sm">Sign In</Button>
-              </Link>
-              <Link href="/dashboard/photographer/upload">
-                <Button variant="outline" size="sm">Activate Client Delivery</Button>
-              </Link>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button size="sm">Book Now</Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-lg">
-                  <DialogHeader><DialogTitle>Book a Session</DialogTitle></DialogHeader>
-                  <form onSubmit={handleBookingSubmit} className="space-y-4 mt-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <Input placeholder="Your Name" value={bookingForm.client_name} onChange={e => setBookingForm({ ...bookingForm, client_name: e.target.value })} required />
-                      <Input type="email" placeholder="Email" value={bookingForm.client_email} onChange={e => setBookingForm({ ...bookingForm, client_email: e.target.value })} required />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <Input placeholder="Phone" value={bookingForm.client_phone} onChange={e => setBookingForm({ ...bookingForm, client_phone: e.target.value })} />
-                      <Input type="date" value={bookingForm.event_date} onChange={e => setBookingForm({ ...bookingForm, event_date: e.target.value })} />
-                    </div>
-                    <Input placeholder="Event Type (Wedding, Portrait, etc.)" value={bookingForm.event_type} onChange={e => setBookingForm({ ...bookingForm, event_type: e.target.value })} />
-                    <Textarea placeholder="Tell us about your event..." value={bookingForm.message} onChange={e => setBookingForm({ ...bookingForm, message: e.target.value })} />
-                    <Button type="submit" className="w-full">Submit Booking</Button>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            </div>
-            <button className="lg:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
-        </div>
-        {mobileMenuOpen && (
-          <div className="lg:hidden border-t bg-background px-4 py-4 space-y-3">
-            {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="block text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
-                {link.label}
-              </Link>
-            ))}
-            <Link href="/login" className="block text-sm font-medium py-2">Sign In</Link>
-            <Link href="/dashboard/photographer/upload" className="block text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
-              Activate Client Delivery
-            </Link>
-          </div>
-        )}
-      </header>
+      <SiteHeader fixed extraActions={bookNowActions} />
 
       {/* Hero */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
@@ -398,51 +357,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-background border-t py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-            <div className="md:col-span-2">
-              <div className="flex items-center gap-2 mb-4">
-                <Camera className="h-6 w-6 text-primary" />
-                <span className="font-[family-name:var(--font-playfair)] text-xl font-bold">Rub Shoots</span>
-              </div>
-              <p className="text-muted-foreground max-w-sm mb-6">
-                Professional photography services capturing life's most precious moments. Wedding, portrait, graduation, and event photography.
-              </p>
-              <div className="flex gap-4">
-                <a href="#" className="h-10 w-10 rounded-full bg-muted flex items-center justify-center hover:bg-primary hover:text-white transition-colors"><Instagram className="h-4 w-4" /></a>
-                <a href="#" className="h-10 w-10 rounded-full bg-muted flex items-center justify-center hover:bg-primary hover:text-white transition-colors"><Facebook className="h-4 w-4" /></a>
-                <a href="#" className="h-10 w-10 rounded-full bg-muted flex items-center justify-center hover:bg-primary hover:text-white transition-colors"><Twitter className="h-4 w-4" /></a>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-3">
-                {navLinks.map((link) => (
-                  <li key={link.href}><Link href={link.href} className="text-muted-foreground hover:text-foreground transition-colors text-sm">{link.label}</Link></li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Contact</h4>
-              <ul className="space-y-3">
-                <li className="flex items-center gap-2 text-sm text-muted-foreground"><Phone className="h-4 w-4" /> +233 20 123 4567</li>
-                <li className="flex items-center gap-2 text-sm text-muted-foreground"><Mail className="h-4 w-4" /> hello@rubshoots.com</li>
-                <li className="flex items-center gap-2 text-sm text-muted-foreground"><MapPin className="h-4 w-4" /> Accra, Ghana</li>
-                <li className="flex items-center gap-2 text-sm text-muted-foreground"><Clock className="h-4 w-4" /> Mon - Sat: 9AM - 6PM</li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground"> Rub Shoots Photography. All rights reserved.</p>
-            <div className="flex gap-6 text-sm text-muted-foreground">
-              <Link href="/login" className="hover:text-foreground">Sign In</Link>
-              <Link href="/dashboard" className="hover:text-foreground">Dashboard</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

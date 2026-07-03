@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/lib/supabase';
+import { SiteHeader } from '@/components/layout/site-header';
 import { toast } from '@/hooks/use-toast';
 
 type AccessStep = 'register' | 'otp' | 'password' | 'gallery';
@@ -281,20 +282,7 @@ export default function GalleryPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Gallery Header */}
-      <header className="border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-2">
-              <Camera className="h-5 w-5 text-primary" />
-              <span className="font-[family-name:var(--font-playfair)] text-lg font-bold">Rub Shoots</span>
-            </Link>
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground hidden sm:inline">{photos.length} photos</span>
-            </div>
-          </div>
-        </div>
-      </header>
+      <SiteHeader showNav={false} />
 
       {/* Gallery Info */}
       <section className="py-8 bg-muted/20">
@@ -304,6 +292,7 @@ export default function GalleryPage() {
           <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
             {event.event_date && <span>{new Date(event.event_date).toLocaleDateString()}</span>}
             {event.location && <span>&bull; {event.location}</span>}
+            <span>&bull; {photos.length} photos</span>
           </div>
         </div>
       </section>

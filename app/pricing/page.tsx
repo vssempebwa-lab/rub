@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Camera, Check, Star, ArrowRight, Menu, X } from 'lucide-react';
+import { Check, Star, ArrowRight, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { SiteHeader } from '@/components/layout/site-header';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
 
@@ -23,7 +24,6 @@ interface Package {
 
 export default function PricingPage() {
   const [packages, setPackages] = useState<Package[]>([]);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [bookingForm, setBookingForm] = useState({
     client_name: '',
     client_email: '',
@@ -62,15 +62,6 @@ export default function PricingPage() {
     }
   }
 
-  const navLinks = [
-    { label: 'Home', href: '/' },
-    { label: 'About', href: '/about' },
-    { label: 'Services', href: '/services' },
-    { label: 'Portfolio', href: '/portfolio' },
-    { label: 'Pricing', href: '/pricing' },
-    { label: 'Contact', href: '/contact' },
-  ];
-
   const tierColors: Record<string, string> = {
     silver: 'border-slate-300',
     gold: 'border-amber-400',
@@ -80,39 +71,7 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 lg:h-20">
-            <Link href="/" className="flex items-center gap-2">
-              <Camera className="h-6 w-6 text-primary" />
-              <span className="font-[family-name:var(--font-playfair)] text-xl font-bold">Rub Shoots</span>
-            </Link>
-            <nav className="hidden lg:flex items-center gap-8">
-              {navLinks.map((link) => (
-                <Link key={link.href} href={link.href} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-            <div className="hidden lg:flex items-center gap-4">
-              <Link href="/login"><Button variant="ghost" size="sm">Sign In</Button></Link>
-            </div>
-            <button className="lg:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
-        </div>
-        {mobileMenuOpen && (
-          <div className="lg:hidden border-t bg-background px-4 py-4 space-y-3">
-            {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="block text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
-                {link.label}
-              </Link>
-            ))}
-          </div>
-        )}
-      </header>
+      <SiteHeader />
 
       {/* Hero */}
       <section className="py-20 lg:py-28 bg-muted/20">

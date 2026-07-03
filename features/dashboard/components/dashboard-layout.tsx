@@ -7,6 +7,7 @@ import { Camera, LogOut, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/features/auth/hooks/use-auth';
 import { dashboardNavigation } from '@/features/dashboard/config/navigation';
+import { getDashboardPath } from '@/features/auth/utils/dashboard-path';
 import type { UserRole } from '@/types';
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -15,6 +16,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const currentNav = dashboardNavigation[role as UserRole] ?? dashboardNavigation.client;
+  const dashboardHome = getDashboardPath(role);
 
   if (loading) {
     return (
@@ -33,7 +35,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       >
         <div className="h-full flex flex-col">
           <div className="h-16 flex items-center px-6 border-b">
-            <Link href="/" className="flex items-center gap-2">
+            <Link href={dashboardHome} className="flex items-center gap-2">
               <Camera className="h-6 w-6 text-primary" />
               <span className="font-[family-name:var(--font-playfair)] text-lg font-bold">Rub Shoots</span>
             </Link>

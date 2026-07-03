@@ -1,16 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Camera, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/lib/supabase';
+import { getDashboardPath } from '@/features/auth/utils/dashboard-path';
 import { toast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
   const router = useRouter();
+  const [checkingSession, setCheckingSession] = useState(true);
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -20,6 +22,26 @@ export default function LoginPage() {
     fullName: '',
     role: 'client' as 'client' | 'photographer',
   });
+
+  useEffect(() => {
+    async function checkExistingSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setCheckingSession(false);
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single();
+
+      router.replace(getDashboardPath(profile?.role));
+    }
+
+    checkExistingSession();
+  }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,7 +62,7 @@ export default function LoginPage() {
           .single();
 
         toast({ title: 'Welcome back!', description: 'Signed in successfully.' });
-        redirectByRole(profile?.role || 'client');
+        router.push(getDashboardPath(profile?.role));
       } else {
         const { data, error } = await supabase.auth.signUp({
           email: form.email,
@@ -65,10 +87,12 @@ export default function LoginPage() {
     }
   }
 
-  function redirectByRole(role: string) {
-    if (role === 'admin') router.push('/dashboard/admin');
-    else if (role === 'photographer') router.push('/dashboard/photographer');
-    else router.push('/dashboard/client');
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
   }
 
   return (
