@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
-  Calendar, Users, Image, FolderOpen, TrendingUp, DollarSign,
-  ArrowUpRight, ArrowDownRight, Clock
+  Calendar, Users, Image, FolderOpen,
+  ArrowUpRight, Clock, Globe
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase';
@@ -143,7 +143,20 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Link href="/dashboard/admin/website">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-violet-100 flex items-center justify-center">
+                <Globe className="h-6 w-6 text-violet-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Edit Website</h3>
+                <p className="text-sm text-muted-foreground">Manage public site content</p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
         <Link href="/dashboard/admin/events">
           <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
             <CardContent className="p-6 flex items-center gap-4">

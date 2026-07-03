@@ -1,14 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { Camera, Phone, Mail, MapPin, Clock, Instagram, Facebook, Twitter, LayoutDashboard, LogIn } from 'lucide-react';
+import { Camera, Phone, Mail, MapPin, Clock, LayoutDashboard, LogIn } from 'lucide-react';
 import { useSession } from '@/features/auth/hooks/use-session';
 import { getDashboardPath } from '@/features/auth/utils/dashboard-path';
 import { NAV_LINKS } from '@/components/layout/site-header';
+import { useWebsiteContent } from '@/features/website/hooks/use-website-content';
+import { SocialLinksBar } from '@/features/website/components/social-links';
 
 export function SiteFooter() {
   const { isAuthenticated, role, loading } = useSession();
+  const { business, loading: contentLoading } = useWebsiteContent();
   const dashboardPath = getDashboardPath(role);
+
+  const primaryPhone = business.phones[0] ?? '';
+  const primaryEmail = business.emails[0] ?? '';
+  const location = [business.city, business.country].filter(Boolean).join(', ');
 
   return (
     <footer className="marketing-footer border-t bg-muted/30">
@@ -17,16 +24,12 @@ export function SiteFooter() {
           <div className="md:col-span-5">
             <div className="flex items-center gap-2 mb-4">
               <Camera className="h-6 w-6 text-primary" />
-              <span className="font-[family-name:var(--font-playfair)] text-xl font-bold">Rub Shoots</span>
+              <span className="font-[family-name:var(--font-playfair)] text-xl font-bold">{business.businessName}</span>
             </div>
             <p className="text-muted-foreground max-w-sm mb-6 text-sm leading-relaxed">
-              Professional photography for weddings, portraits, graduations, and events across Ghana. This is our public studio website — bookings and portfolio live here.
+              {business.footerDescription}
             </p>
-            <div className="flex gap-3">
-              <a href="#" aria-label="Instagram" className="h-9 w-9 rounded-full bg-background border flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"><Instagram className="h-4 w-4" /></a>
-              <a href="#" aria-label="Facebook" className="h-9 w-9 rounded-full bg-background border flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"><Facebook className="h-4 w-4" /></a>
-              <a href="#" aria-label="Twitter" className="h-9 w-9 rounded-full bg-background border flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"><Twitter className="h-4 w-4" /></a>
-            </div>
+            <SocialLinksBar social={business.social} />
           </div>
 
           <div className="md:col-span-3">
@@ -45,10 +48,10 @@ export function SiteFooter() {
           <div className="md:col-span-2">
             <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Contact</h4>
             <ul className="space-y-2.5 text-sm text-muted-foreground">
-              <li className="flex items-center gap-2"><Phone className="h-4 w-4 shrink-0" /> +233 20 123 4567</li>
-              <li className="flex items-center gap-2"><Mail className="h-4 w-4 shrink-0" /> hello@rubshoots.com</li>
-              <li className="flex items-center gap-2"><MapPin className="h-4 w-4 shrink-0" /> Accra, Ghana</li>
-              <li className="flex items-center gap-2"><Clock className="h-4 w-4 shrink-0" /> Mon–Sat, 9AM–6PM</li>
+              {primaryPhone && <li className="flex items-center gap-2"><Phone className="h-4 w-4 shrink-0" /> {primaryPhone}</li>}
+              {primaryEmail && <li className="flex items-center gap-2"><Mail className="h-4 w-4 shrink-0" /> {primaryEmail}</li>}
+              {location && <li className="flex items-center gap-2"><MapPin className="h-4 w-4 shrink-0" /> {location}</li>}
+              {business.footerHours && <li className="flex items-center gap-2"><Clock className="h-4 w-4 shrink-0" /> {business.footerHours}</li>}
             </ul>
           </div>
 
@@ -87,7 +90,7 @@ export function SiteFooter() {
         </div>
 
         <div className="border-t mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} Rub Shoots Photography. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {business.businessName} Photography. All rights reserved.</p>
           <p>Public website · <Link href="/login" className="hover:text-foreground underline-offset-4 hover:underline">Staff & client login</Link></p>
         </div>
       </div>

@@ -1,0 +1,214 @@
+-- Website content management tables
+
+CREATE TABLE IF NOT EXISTS site_content (
+  key TEXT PRIMARY KEY,
+  value JSONB NOT NULL DEFAULT '{}',
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS team_members (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  role TEXT NOT NULL,
+  image_url TEXT,
+  bio TEXT,
+  sort_order INT DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS site_faqs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  question TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  page TEXT DEFAULT 'pricing',
+  sort_order INT DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE site_content ENABLE ROW LEVEL SECURITY;
+ALTER TABLE team_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE site_faqs ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "site_content_select_public" ON site_content;
+CREATE POLICY "site_content_select_public" ON site_content FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "site_content_insert_authenticated" ON site_content;
+CREATE POLICY "site_content_insert_authenticated" ON site_content FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "site_content_update_authenticated" ON site_content;
+CREATE POLICY "site_content_update_authenticated" ON site_content FOR UPDATE USING (true);
+
+DROP POLICY IF EXISTS "team_members_select_public" ON team_members;
+CREATE POLICY "team_members_select_public" ON team_members FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "team_members_insert_authenticated" ON team_members;
+CREATE POLICY "team_members_insert_authenticated" ON team_members FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "team_members_update_authenticated" ON team_members;
+CREATE POLICY "team_members_update_authenticated" ON team_members FOR UPDATE USING (true);
+
+DROP POLICY IF EXISTS "team_members_delete_authenticated" ON team_members;
+CREATE POLICY "team_members_delete_authenticated" ON team_members FOR DELETE USING (true);
+
+DROP POLICY IF EXISTS "site_faqs_select_public" ON site_faqs;
+CREATE POLICY "site_faqs_select_public" ON site_faqs FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "site_faqs_insert_authenticated" ON site_faqs;
+CREATE POLICY "site_faqs_insert_authenticated" ON site_faqs FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "site_faqs_update_authenticated" ON site_faqs;
+CREATE POLICY "site_faqs_update_authenticated" ON site_faqs FOR UPDATE USING (true);
+
+DROP POLICY IF EXISTS "site_faqs_delete_authenticated" ON site_faqs;
+CREATE POLICY "site_faqs_delete_authenticated" ON site_faqs FOR DELETE USING (true);
+
+-- Default website content
+INSERT INTO site_content (key, value) VALUES
+('business', '{
+  "businessName": "Rub Shoots",
+  "tagline": "Photography Studio",
+  "phones": ["+256 700 123 456", "+256 772 987 654"],
+  "emails": ["hello@rubshoots.com", "bookings@rubshoots.com"],
+  "addressLine1": "Plot 42, Acacia Avenue",
+  "addressLine2": "Kololo",
+  "city": "Kampala",
+  "country": "Uganda",
+  "mapAddress": "Plot 42, Acacia Avenue, Kololo, Kampala, Uganda",
+  "hoursWeekday": "Monday - Saturday: 9:00 AM - 6:00 PM",
+  "hoursWeekend": "Sunday: By appointment",
+  "footerHours": "Mon–Sat, 9AM–6PM",
+  "footerDescription": "Professional photography for weddings, portraits, graduations, and events across Uganda. This is our public studio website — bookings and portfolio live here.",
+  "currencyCode": "UGX",
+  "seoTitle": "Rub Shoots Photography | Professional Photography Services",
+  "seoDescription": "Wedding, portrait, graduation, corporate, and event photography. Book your session today.",
+  "social": {
+    "instagram": "",
+    "facebook": "",
+    "twitter": ""
+  }
+}'::jsonb),
+('home', '{
+  "hero": {
+    "badge": "Professional Photography",
+    "title": "Capturing Life''s Beautiful Moments",
+    "subtitle": "Wedding, portrait, graduation, and event photography that tells your unique story with artistry and passion.",
+    "imageUrl": "https://images.pexels.com/photos/2253870/pexels-photo-2253870.jpeg?auto=compress&cs=tinysrgb&w=1920"
+  },
+  "stats": [
+    { "icon": "Camera", "value": "500+", "label": "Events Covered" },
+    { "icon": "Users", "value": "1000+", "label": "Happy Clients" },
+    { "icon": "Award", "value": "15+", "label": "Years Experience" },
+    { "icon": "Star", "value": "4.9", "label": "Average Rating" }
+  ],
+  "servicesSection": {
+    "title": "Our Services",
+    "subtitle": "From intimate portraits to grand celebrations, we bring expertise and creativity to every shoot."
+  },
+  "projectsSection": {
+    "title": "Latest Projects",
+    "subtitle": "Browse our most recent photography work"
+  },
+  "testimonialsSection": {
+    "title": "What Clients Say",
+    "subtitle": "Real stories from the people we have had the pleasure of working with"
+  },
+  "cta": {
+    "title": "Ready to Capture Your Story?",
+    "subtitle": "Let us create timeless memories together. Book your session today and experience photography that goes beyond the ordinary."
+  }
+}'::jsonb),
+('about', '{
+  "hero": {
+    "title": "Our Story",
+    "subtitle": "Two decades of capturing joy, love, and life''s most precious moments across Uganda and beyond.",
+    "imageUrl": "https://images.pexels.com/photos/1264210/pexels-photo-1264210.jpeg?auto=compress&cs=tinysrgb&w=1920"
+  },
+  "story": {
+    "title": "Passion Meets Precision",
+    "paragraphs": [
+      "Founded in 2008, Rub Shoots Photography began as a small studio in Kampala with a simple mission: to capture authentic moments that families and couples would treasure forever.",
+      "What started as a one-person operation has grown into a full-service photography company with a team of talented photographers, editors, and creative professionals.",
+      "We believe every moment deserves to be remembered. From the nervous excitement before a wedding to the proud smiles at graduation, we are there to preserve it all."
+    ],
+    "imageUrl": "https://images.pexels.com/photos/1264210/pexels-photo-1264210.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "values": [
+      { "icon": "Heart", "label": "Passion Driven" },
+      { "icon": "Award", "label": "Award Winning" },
+      { "icon": "Users", "label": "Client First" }
+    ]
+  },
+  "mission": {
+    "title": "Our Mission",
+    "content": "To provide exceptional photography services that capture the essence of every moment, delivering images that evoke emotion and preserve memories for generations. We strive to make every client feel comfortable and confident in front of the camera."
+  },
+  "vision": {
+    "title": "Our Vision",
+    "content": "To be the most trusted and sought-after photography studio in East Africa, known for our artistry, professionalism, and innovative approach to visual storytelling. We aim to set the standard for excellence in the photography industry."
+  },
+  "teamSection": {
+    "title": "Meet the Team",
+    "subtitle": "Talented professionals dedicated to capturing your perfect moments"
+  },
+  "cta": {
+    "title": "Let Us Tell Your Story",
+    "subtitle": "Every story is unique. We would love to hear yours and create something beautiful together."
+  }
+}'::jsonb),
+('contact', '{
+  "hero": {
+    "title": "Get In Touch",
+    "subtitle": "Have a question or ready to book? We would love to hear from you. Reach out and let us start a conversation."
+  }
+}'::jsonb),
+('services', '{
+  "hero": {
+    "badge": "What We Offer",
+    "title": "Our Services",
+    "subtitle": "Comprehensive photography solutions tailored to capture every special moment in your life.",
+    "imageUrl": "https://images.pexels.com/photos/1547813/pexels-photo-1547813.jpeg?auto=compress&cs=tinysrgb&w=1920"
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "subtitle": "Simple steps to your perfect photos",
+    "steps": [
+      { "step": "01", "title": "Book", "description": "Choose your package and schedule your session" },
+      { "step": "02", "title": "Shoot", "description": "Our team captures your special moments" },
+      { "step": "03", "title": "Review", "description": "Preview and select your favorite images" },
+      { "step": "04", "title": "Deliver", "description": "Receive your edited photos in high resolution" }
+    ]
+  }
+}'::jsonb),
+('portfolio', '{
+  "hero": {
+    "title": "Portfolio",
+    "subtitle": "Explore our collection of weddings, portraits, events, and more."
+  }
+}'::jsonb),
+('pricing', '{
+  "hero": {
+    "badge": "Transparent Pricing",
+    "title": "Investment in Memories",
+    "subtitle": "Choose the package that fits your needs. Every package includes our signature quality and attention to detail."
+  },
+  "faqTitle": "Common Questions"
+}'::jsonb)
+ON CONFLICT (key) DO NOTHING;
+
+INSERT INTO team_members (name, role, image_url, sort_order)
+SELECT * FROM (VALUES
+  ('Ruben Mensah', 'Founder & Lead Photographer', 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400', 1),
+  ('Ama Darko', 'Senior Photographer', 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400', 2),
+  ('Kofi Asante', 'Event Photographer', 'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=400', 3)
+) AS v(name, role, image_url, sort_order)
+WHERE NOT EXISTS (SELECT 1 FROM team_members LIMIT 1);
+
+INSERT INTO site_faqs (question, answer, page, sort_order)
+SELECT * FROM (VALUES
+  ('How far in advance should I book?', 'We recommend booking at least 3-6 months in advance for weddings and 1-2 months for other events to ensure availability.', 'pricing', 1),
+  ('What is included in the edited photos?', 'All edited photos include color correction, exposure adjustment, cropping, and basic retouching. Advanced retouching is available upon request.', 'pricing', 2),
+  ('How long until I receive my photos?', 'Turnaround time is typically 2-4 weeks for standard packages and 1-2 weeks for premium packages.', 'pricing', 3),
+  ('Can I customize a package?', 'Absolutely! Our Custom package is designed for clients who want a tailored experience. Contact us to discuss your needs.', 'pricing', 4)
+) AS v(question, answer, page, sort_order)
+WHERE NOT EXISTS (SELECT 1 FROM site_faqs LIMIT 1);

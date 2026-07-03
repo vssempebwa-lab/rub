@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MarketingPage } from '@/components/layout/marketing-page';
 import { supabase } from '@/lib/supabase';
+import { useWebsiteContent } from '@/features/website/hooks/use-website-content';
 
 interface Service {
   id: string;
@@ -28,6 +29,8 @@ interface Category {
 }
 
 export default function ServicesPage() {
+  const { content, business } = useWebsiteContent();
+  const { services: servicesContent } = content;
   const [services, setServices] = useState<Service[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -56,7 +59,7 @@ export default function ServicesPage() {
       <section className="relative py-20 lg:py-28 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
-            src="https://images.pexels.com/photos/1547813/pexels-photo-1547813.jpeg?auto=compress&cs=tinysrgb&w=1920"
+            src={servicesContent.hero.imageUrl}
             alt="Services"
             fill
             className="object-cover"
@@ -64,10 +67,10 @@ export default function ServicesPage() {
           <div className="absolute inset-0 bg-black/60" />
         </div>
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center text-white">
-          <Badge className="mb-6 bg-white/20 text-white border-white/30">What We Offer</Badge>
-          <h1 className="font-[family-name:var(--font-playfair)] text-4xl md:text-6xl font-bold mb-6">Our Services</h1>
+          <Badge className="mb-6 bg-white/20 text-white border-white/30">{servicesContent.hero.badge}</Badge>
+          <h1 className="font-[family-name:var(--font-playfair)] text-4xl md:text-6xl font-bold mb-6">{servicesContent.hero.title}</h1>
           <p className="text-lg text-white/80 max-w-2xl mx-auto">
-            Comprehensive photography solutions tailored to capture every special moment in your life.
+            {servicesContent.hero.subtitle}
           </p>
         </div>
       </section>
@@ -126,7 +129,7 @@ export default function ServicesPage() {
                     {service.starting_price && (
                       <div className="text-sm">
                         <span className="text-muted-foreground">From </span>
-                        <span className="font-semibold">GHS {service.starting_price.toLocaleString()}</span>
+                        <span className="font-semibold">{business.currencyCode} {service.starting_price.toLocaleString()}</span>
                       </div>
                     )}
                     <Link href="/pricing">
@@ -151,20 +154,15 @@ export default function ServicesPage() {
       <section className="py-20 bg-muted/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold mb-4">How It Works</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">Simple steps to your perfect photos</p>
+            <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold mb-4">{servicesContent.howItWorks.title}</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">{servicesContent.howItWorks.subtitle}</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {[
-              { step: '01', title: 'Book', desc: 'Choose your package and schedule your session' },
-              { step: '02', title: 'Shoot', desc: 'Our team captures your special moments' },
-              { step: '03', title: 'Review', desc: 'Preview and select your favorite images' },
-              { step: '04', title: 'Deliver', desc: 'Receive your edited photos in high resolution' },
-            ].map((item, i) => (
+            {servicesContent.howItWorks.steps.map((item, i) => (
               <div key={i} className="text-center">
                 <div className="text-5xl font-bold text-primary/20 font-[family-name:var(--font-playfair)] mb-4">{item.step}</div>
                 <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
-                <p className="text-sm text-muted-foreground">{item.desc}</p>
+                <p className="text-sm text-muted-foreground">{item.description}</p>
               </div>
             ))}
           </div>

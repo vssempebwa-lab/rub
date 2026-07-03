@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MarketingPage } from '@/components/layout/marketing-page';
 import { supabase } from '@/lib/supabase';
+import { useWebsiteContent } from '@/features/website/hooks/use-website-content';
 
 interface Event {
   id: string;
@@ -28,6 +29,8 @@ interface Category {
 }
 
 export default function PortfolioPage() {
+  const { content } = useWebsiteContent();
+  const { portfolio } = content;
   const [events, setEvents] = useState<Event[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -69,9 +72,9 @@ export default function PortfolioPage() {
         </div>
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center text-white">
           <Badge className="mb-6 bg-white/20 text-white border-white/30">Our Work</Badge>
-          <h1 className="font-[family-name:var(--font-playfair)] text-4xl md:text-6xl font-bold mb-6">Portfolio</h1>
+          <h1 className="font-[family-name:var(--font-playfair)] text-4xl md:text-6xl font-bold mb-6">{portfolio.hero.title}</h1>
           <p className="text-lg text-white/80 max-w-2xl mx-auto">
-            Explore our collection of weddings, portraits, events, and more.
+            {portfolio.hero.subtitle}
           </p>
         </div>
       </section>

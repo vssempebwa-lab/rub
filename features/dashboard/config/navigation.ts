@@ -1,5 +1,6 @@
 import {
   Camera,
+  Globe,
   LayoutDashboard,
   Calendar,
   Image as ImageIcon,
@@ -43,6 +44,7 @@ export const dashboardNavigation: Record<UserRole, NavItem[]> = {
     { label: 'Bookings', href: '/dashboard/admin/bookings', icon: Calendar },
     { label: 'Events', href: '/dashboard/admin/events', icon: FolderOpen },
     { label: 'Gallery Manager', href: '/dashboard/admin/galleries', icon: ImageIcon },
+    { label: 'Website', href: '/dashboard/admin/website', icon: Globe },
     { label: 'Clients', href: '/dashboard/admin/clients', icon: Users },
     { label: 'Photographers', href: '/dashboard/admin/photographers', icon: Camera },
     { label: 'Reports', href: '/dashboard/admin/reports', icon: BarChart3 },

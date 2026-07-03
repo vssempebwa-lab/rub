@@ -13,6 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { MarketingPage } from '@/components/layout/marketing-page';
 import { BookSessionDialog } from '@/components/layout/book-session-dialog';
 import { supabase } from '@/lib/supabase';
+import { useWebsiteContent } from '@/features/website/hooks/use-website-content';
+import { getIcon } from '@/features/website/utils/icon-map';
 
 interface Category {
   id: string;
@@ -41,6 +43,8 @@ interface Event {
 }
 
 export default function HomePage() {
+  const { content } = useWebsiteContent();
+  const { home } = content;
   const [categories, setCategories] = useState<Category[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [featuredEvents, setFeaturedEvents] = useState<Event[]>([]);
@@ -67,7 +71,7 @@ export default function HomePage() {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
         <div className="absolute inset-0 z-0">
           <Image
-            src="https://images.pexels.com/photos/2253870/pexels-photo-2253870.jpeg?auto=compress&cs=tinysrgb&w=1920"
+            src={home.hero.imageUrl}
             alt="Photography"
             fill
             className="object-cover"
@@ -76,12 +80,12 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
         </div>
         <div className="relative z-10 max-w-5xl mx-auto px-4 text-center text-white">
-          <Badge className="mb-6 bg-white/20 text-white border-white/30 backdrop-blur-sm">Professional Photography</Badge>
-          <h1 className="font-[family-name:var(--font-playfair)] text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight">
-            Capturing Life's<br />Beautiful Moments
+          <Badge className="mb-6 bg-white/20 text-white border-white/30 backdrop-blur-sm">{home.hero.badge}</Badge>
+          <h1 className="font-[family-name:var(--font-playfair)] text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight whitespace-pre-line">
+            {home.hero.title}
           </h1>
           <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-10">
-            Wedding, portrait, graduation, and event photography that tells your unique story with artistry and passion.
+            {home.hero.subtitle}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/portfolio">
@@ -107,18 +111,15 @@ export default function HomePage() {
       <section className="py-16 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[
-              { icon: Camera, value: '500+', label: 'Events Covered' },
-              { icon: Users, value: '1000+', label: 'Happy Clients' },
-              { icon: Award, value: '15+', label: 'Years Experience' },
-              { icon: Star, value: '4.9', label: 'Average Rating' },
-            ].map((stat, i) => (
+            {home.stats.map((stat, i) => {
+              const StatIcon = getIcon(stat.icon);
+              return (
               <div key={i} className="text-center">
-                <stat.icon className="h-8 w-8 text-primary mx-auto mb-3" />
+                <StatIcon className="h-8 w-8 text-primary mx-auto mb-3" />
                 <div className="text-3xl font-bold font-[family-name:var(--font-playfair)]">{stat.value}</div>
                 <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
               </div>
-            ))}
+            );})}
           </div>
         </div>
       </section>
@@ -127,8 +128,8 @@ export default function HomePage() {
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold mb-4">Our Services</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">From intimate portraits to grand celebrations, we bring expertise and creativity to every shoot.</p>
+            <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold mb-4">{home.servicesSection.title}</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">{home.servicesSection.subtitle}</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {categories.slice(0, 8).map((cat) => (
@@ -160,8 +161,8 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between mb-12">
             <div>
-              <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold mb-4">Latest Projects</h2>
-              <p className="text-muted-foreground">Browse our most recent photography work</p>
+              <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold mb-4">{home.projectsSection.title}</h2>
+              <p className="text-muted-foreground">{home.projectsSection.subtitle}</p>
             </div>
             <Link href="/portfolio" className="hidden md:flex items-center text-sm font-medium text-primary hover:underline">
               View All <ArrowRight className="ml-1 h-4 w-4" />
@@ -217,8 +218,8 @@ export default function HomePage() {
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold mb-4">What Clients Say</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">Real stories from the people we have had the pleasure of working with</p>
+            <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold mb-4">{home.testimonialsSection.title}</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">{home.testimonialsSection.subtitle}</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((t) => (
@@ -247,9 +248,9 @@ export default function HomePage() {
       {/* CTA */}
       <section className="py-20 bg-primary text-primary-foreground">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-5xl font-bold mb-6">Ready to Capture Your Story?</h2>
+          <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-5xl font-bold mb-6">{home.cta.title}</h2>
           <p className="text-lg text-primary-foreground/80 mb-10 max-w-2xl mx-auto">
-            Let us create timeless memories together. Book your session today and experience photography that goes beyond the ordinary.
+            {home.cta.subtitle}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <BookSessionDialog

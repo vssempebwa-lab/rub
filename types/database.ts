@@ -405,6 +405,77 @@ export type Database = {
           sort_order?: number;
         };
       };
+      site_content: {
+        Row: {
+          key: string;
+          value: Record<string, unknown>;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          value: Record<string, unknown>;
+          updated_at?: string;
+        };
+        Update: {
+          value?: Record<string, unknown>;
+          updated_at?: string;
+        };
+      };
+      team_members: {
+        Row: {
+          id: string;
+          name: string;
+          role: string;
+          image_url: string | null;
+          bio: string | null;
+          sort_order: number;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          role: string;
+          image_url?: string | null;
+          bio?: string | null;
+          sort_order?: number;
+          is_active?: boolean;
+        };
+        Update: {
+          name?: string;
+          role?: string;
+          image_url?: string | null;
+          bio?: string | null;
+          sort_order?: number;
+          is_active?: boolean;
+        };
+      };
+      site_faqs: {
+        Row: {
+          id: string;
+          question: string;
+          answer: string;
+          page: string;
+          sort_order: number;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          question: string;
+          answer: string;
+          page?: string;
+          sort_order?: number;
+          is_active?: boolean;
+        };
+        Update: {
+          question?: string;
+          answer?: string;
+          page?: string;
+          sort_order?: number;
+          is_active?: boolean;
+        };
+      };
     };
   };
 };

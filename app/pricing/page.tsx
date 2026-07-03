@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { MarketingPage } from '@/components/layout/marketing-page';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
+import { useWebsiteContent } from '@/features/website/hooks/use-website-content';
 
 interface Package {
   id: string;
@@ -23,6 +24,8 @@ interface Package {
 }
 
 export default function PricingPage() {
+  const { content, business, faqs } = useWebsiteContent();
+  const { pricing } = content;
   const [packages, setPackages] = useState<Package[]>([]);
   const [bookingForm, setBookingForm] = useState({
     client_name: '',
@@ -75,10 +78,10 @@ export default function PricingPage() {
       {/* Hero */}
       <section className="py-20 lg:py-28 bg-muted/20">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <Badge className="mb-6">Transparent Pricing</Badge>
-          <h1 className="font-[family-name:var(--font-playfair)] text-4xl md:text-6xl font-bold mb-6">Investment in Memories</h1>
+          <Badge className="mb-6">{pricing.hero.badge}</Badge>
+          <h1 className="font-[family-name:var(--font-playfair)] text-4xl md:text-6xl font-bold mb-6">{pricing.hero.title}</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Choose the package that fits your needs. Every package includes our signature quality and attention to detail.
+            {pricing.hero.subtitle}
           </p>
         </div>
       </section>
@@ -106,7 +109,7 @@ export default function PricingPage() {
                 <div className="mb-6">
                   {pkg.price ? (
                     <div className="flex items-baseline gap-1">
-                      <span className="text-sm text-muted-foreground">GHS</span>
+                      <span className="text-sm text-muted-foreground">{business.currencyCode}</span>
                       <span className="text-4xl font-bold">{pkg.price.toLocaleString()}</span>
                     </div>
                   ) : (
@@ -158,18 +161,13 @@ export default function PricingPage() {
       <section className="py-20 bg-muted/20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold mb-4">Common Questions</h2>
+            <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold mb-4">{pricing.faqTitle}</h2>
           </div>
           <div className="space-y-6">
-            {[
-              { q: 'How far in advance should I book?', a: 'We recommend booking at least 3-6 months in advance for weddings and 1-2 months for other events to ensure availability.' },
-              { q: 'What is included in the edited photos?', a: 'All edited photos include color correction, exposure adjustment, cropping, and basic retouching. Advanced retouching is available upon request.' },
-              { q: 'How long until I receive my photos?', a: 'Turnaround time is typically 2-4 weeks for standard packages and 1-2 weeks for premium packages.' },
-              { q: 'Can I customize a package?', a: 'Absolutely! Our Custom package is designed for clients who want a tailored experience. Contact us to discuss your needs.' },
-            ].map((faq, i) => (
-              <div key={i} className="bg-card border rounded-xl p-6">
-                <h3 className="font-semibold mb-2">{faq.q}</h3>
-                <p className="text-muted-foreground text-sm">{faq.a}</p>
+            {faqs.map((faq) => (
+              <div key={faq.id} className="bg-card border rounded-xl p-6">
+                <h3 className="font-semibold mb-2">{faq.question}</h3>
+                <p className="text-muted-foreground text-sm">{faq.answer}</p>
               </div>
             ))}
           </div>

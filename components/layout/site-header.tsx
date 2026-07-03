@@ -9,6 +9,7 @@ import { useSession } from '@/features/auth/hooks/use-session';
 import { UserAccountMenu } from '@/components/layout/user-account-menu';
 import { BookSessionDialog } from '@/components/layout/book-session-dialog';
 import { getDashboardPath } from '@/features/auth/utils/dashboard-path';
+import { useWebsiteContent } from '@/features/website/hooks/use-website-content';
 
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
@@ -28,6 +29,7 @@ type SiteHeaderProps = {
 export function SiteHeader({ fixed = false, showNav = true, extraActions }: SiteHeaderProps) {
   const pathname = usePathname();
   const { profile, loading, signOut, role, isAuthenticated } = useSession();
+  const { business } = useWebsiteContent();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const dashboardPath = getDashboardPath(role);
@@ -44,8 +46,8 @@ export function SiteHeader({ fixed = false, showNav = true, extraActions }: Site
               <Camera className="h-5 w-5 text-primary" />
             </span>
             <div className="leading-tight">
-              <span className="font-[family-name:var(--font-playfair)] text-lg font-bold block">Rub Shoots</span>
-              <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Photography Studio</span>
+              <span className="font-[family-name:var(--font-playfair)] text-lg font-bold block">{business.businessName}</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{business.tagline}</span>
             </div>
           </Link>
 
