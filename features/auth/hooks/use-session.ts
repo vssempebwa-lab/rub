@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { signOutUser } from '@/features/auth/utils/sign-out';
 import type { Profile } from '@/types';
 
 export function useSession() {
@@ -47,9 +48,7 @@ export function useSession() {
   }, []);
 
   async function signOut() {
-    await supabase.auth.signOut();
-    setProfile(null);
-    window.location.href = '/';
+    await signOutUser();
   }
 
   return {

@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Camera, LogOut, Menu, X } from 'lucide-react';
+import { Camera, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/features/auth/hooks/use-auth';
+import { SignOutButton } from '@/features/auth/components/sign-out-button';
 import { dashboardNavigation } from '@/features/dashboard/config/navigation';
 import { getDashboardPath } from '@/features/auth/utils/dashboard-path';
 import type { UserRole } from '@/types';
@@ -79,13 +80,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </nav>
           </div>
           <div className="p-3 border-t">
-            <button
-              onClick={signOut}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors w-full"
-            >
-              <LogOut className="h-4 w-4" />
-              Sign Out
-            </button>
+            <SignOutButton display="sidebar" onSignOut={signOut} />
           </div>
         </div>
       </aside>

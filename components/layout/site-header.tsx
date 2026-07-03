@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Camera, LayoutDashboard, LogOut, Menu, X } from 'lucide-react';
+import { Camera, LayoutDashboard, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSession } from '@/features/auth/hooks/use-session';
+import { SignOutButton } from '@/features/auth/components/sign-out-button';
 import { getDashboardPath } from '@/features/auth/utils/dashboard-path';
 
 const NAV_LINKS = [
@@ -74,10 +75,7 @@ export function SiteHeader({ fixed = false, showNav = true, extraActions }: Site
                   <span className="text-sm text-muted-foreground hidden xl:inline">
                     {displayName}
                   </span>
-                  <Button variant="outline" size="sm" onClick={signOut} className="gap-2">
-                    <LogOut className="h-4 w-4" />
-                    Sign Out
-                  </Button>
+                  <SignOutButton onSignOut={signOut} />
                 </>
               ) : (
                 <Link href="/login">
@@ -124,13 +122,11 @@ export function SiteHeader({ fixed = false, showNav = true, extraActions }: Site
                   Dashboard
                 </Link>
                 <p className="text-sm text-muted-foreground py-1">{displayName}</p>
-                <button
-                  onClick={() => { setMobileMenuOpen(false); signOut(); }}
-                  className="flex items-center gap-2 text-sm font-medium py-2 text-destructive"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Sign Out
-                </button>
+                <SignOutButton
+                  display="menu"
+                  onSignOut={signOut}
+                  onOpen={() => setMobileMenuOpen(false)}
+                />
               </>
             ) : (
               <Link
