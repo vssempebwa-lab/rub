@@ -90,7 +90,7 @@ export function SiteFooter() {
         </div>
 
         <div className="border-t mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} {business.businessName} Photography. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {business.footerCopyright || `${business.businessName} Photography. All rights reserved.`}</p>
           <p>Public website · <Link href="/login" className="hover:text-foreground underline-offset-4 hover:underline">Staff & client login</Link></p>
         </div>
       </div>

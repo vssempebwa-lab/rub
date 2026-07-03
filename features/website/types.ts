@@ -27,6 +27,7 @@ export type BusinessContent = {
   hoursWeekend: string;
   footerHours: string;
   footerDescription: string;
+  footerCopyright: string;
   currencyCode: string;
   seoTitle: string;
   seoDescription: string;

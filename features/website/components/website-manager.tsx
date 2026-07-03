@@ -19,6 +19,7 @@ import {
   saveSiteContent,
 } from '@/features/website/api/site-content';
 import type { SiteContentMap, SiteFaq, TeamMember } from '@/features/website/types';
+import { PricingPackagesEditor } from '@/features/website/components/pricing-packages-editor';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
 
@@ -227,6 +228,7 @@ export function WebsiteManager() {
           <TabsTrigger value="contact">Contact</TabsTrigger>
           <TabsTrigger value="services">Services</TabsTrigger>
           <TabsTrigger value="portfolio">Portfolio & Pricing</TabsTrigger>
+          <TabsTrigger value="packages">Packages</TabsTrigger>
           <TabsTrigger value="team">Team</TabsTrigger>
           <TabsTrigger value="faqs">FAQs</TabsTrigger>
           <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
@@ -249,6 +251,9 @@ export function WebsiteManager() {
               </div>
               <FieldGroup label="Footer description">
                 <Textarea rows={3} value={business.footerDescription} onChange={(e) => setContent({ ...content, business: { ...business, footerDescription: e.target.value } })} />
+              </FieldGroup>
+              <FieldGroup label="Footer copyright" hint="Appears after '© 2026' in the footer. E.g. 'Rub Shoots Photography. All rights reserved.'">
+                <Input value={business.footerCopyright ?? ''} onChange={(e) => setContent({ ...content, business: { ...business, footerCopyright: e.target.value } })} />
               </FieldGroup>
               <div className="grid sm:grid-cols-2 gap-6">
                 <FieldGroup label="Phone numbers">
@@ -426,6 +431,10 @@ export function WebsiteManager() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="packages">
+          <PricingPackagesEditor />
         </TabsContent>
 
         <TabsContent value="team">

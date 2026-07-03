@@ -18,7 +18,12 @@ function loadEnv() {
 }
 
 const env = loadEnv();
-const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
+const supabase = createClient(
+  env.NEXT_PUBLIC_SUPABASE_URL,
+  serviceRoleKey || env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  serviceRoleKey ? { auth: { autoRefreshToken: false, persistSession: false } } : undefined
+);
 
 const PASSWORD = 'RubShoots2026!';
 
@@ -46,15 +51,22 @@ const PHOTO_URLS = [
 ];
 
 async function ensureUser({ email, fullName, role, phone, bio }) {
-  let { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password: PASSWORD });
+  const { data: listData } = await supabase.auth.admin.listUsers();
+  const existingUser = listData?.users?.find((u) => u.email === email);
 
-  if (signInError) {
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password: PASSWORD });
-    if (signUpError) throw new Error(`Failed to create ${email}: ${signUpError.message}`);
-    signInData = signUpData;
+  let userId;
+  if (existingUser) {
+    userId = existingUser.id;
+  } else {
+    const { data: created, error: createError } = await supabase.auth.admin.createUser({
+      email,
+      password: PASSWORD,
+      email_confirm: true,
+    });
+    if (createError) throw new Error(`Failed to create ${email}: ${createError.message}`);
+    userId = created.user?.id;
   }
 
-  const userId = signInData.user?.id;
   if (!userId) throw new Error(`No user id for ${email}`);
 
   const { data: existing } = await supabase.from('profiles').select('id').eq('id', userId).maybeSingle();

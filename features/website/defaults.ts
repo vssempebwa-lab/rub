@@ -16,6 +16,7 @@ export const defaultSiteContent: SiteContentMap = {
     footerHours: 'Mon–Sat, 9AM–6PM',
     footerDescription:
       'Professional photography for weddings, portraits, graduations, and events across Uganda. This is our public studio website — bookings and portfolio live here.',
+    footerCopyright: 'Rub Shoots Photography. All rights reserved.',
     currencyCode: 'UGX',
     seoTitle: 'Rub Shoots Photography | Professional Photography Services',
     seoDescription:
