@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Grid3X3, LayoutList, ArrowRight, Camera } from 'lucide-react';
+import { Grid3X3, LayoutList, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { SiteHeader } from '@/components/layout/site-header';
+import { MarketingPage } from '@/components/layout/marketing-page';
 import { supabase } from '@/lib/supabase';
 
 interface Event {
@@ -54,8 +54,7 @@ export default function PortfolioPage() {
       });
 
   return (
-    <div className="min-h-screen bg-background">
-      <SiteHeader />
+    <MarketingPage>
 
       {/* Hero */}
       <section className="relative py-20 lg:py-28 overflow-hidden">
@@ -178,17 +177,6 @@ export default function PortfolioPage() {
           )}
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-background border-t py-12">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Camera className="h-6 w-6 text-primary" />
-            <span className="font-[family-name:var(--font-playfair)] text-xl font-bold">Rub Shoots</span>
-          </div>
-          <p className="text-sm text-muted-foreground"> Rub Shoots Photography. All rights reserved.</p>
-        </div>
-      </footer>
-    </div>
+    </MarketingPage>
   );
 }

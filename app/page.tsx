@@ -10,13 +10,9 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { SiteHeader } from '@/components/layout/site-header';
-import { SiteFooter } from '@/components/layout/site-footer';
+import { MarketingPage } from '@/components/layout/marketing-page';
+import { BookSessionDialog } from '@/components/layout/book-session-dialog';
 import { supabase } from '@/lib/supabase';
-import { toast } from '@/hooks/use-toast';
 
 interface Category {
   id: string;
@@ -48,14 +44,6 @@ export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [featuredEvents, setFeaturedEvents] = useState<Event[]>([]);
-  const [bookingForm, setBookingForm] = useState({
-    client_name: '',
-    client_email: '',
-    client_phone: '',
-    event_date: '',
-    event_type: '',
-    message: '',
-  });
 
   useEffect(() => {
     loadData();
@@ -72,56 +60,8 @@ export default function HomePage() {
     if (eventData) setFeaturedEvents(eventData);
   }
 
-  async function handleBookingSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const { error } = await supabase.from('bookings').insert([{
-      client_name: bookingForm.client_name,
-      client_email: bookingForm.client_email,
-      client_phone: bookingForm.client_phone || null,
-      event_date: bookingForm.event_date || null,
-      event_type: bookingForm.event_type || null,
-      message: bookingForm.message || null,
-    }]);
-    if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Booking Submitted', description: 'We will contact you shortly!' });
-      setBookingForm({ client_name: '', client_email: '', client_phone: '', event_date: '', event_type: '', message: '' });
-    }
-  }
-
-  const bookNowActions = (
-    <>
-      <Link href="/dashboard/photographer/upload">
-        <Button variant="outline" size="sm">Activate Client Delivery</Button>
-      </Link>
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button size="sm">Book Now</Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Book a Session</DialogTitle></DialogHeader>
-          <form onSubmit={handleBookingSubmit} className="space-y-4 mt-4">
-            <div className="grid grid-cols-2 gap-4">
-              <Input placeholder="Your Name" value={bookingForm.client_name} onChange={e => setBookingForm({ ...bookingForm, client_name: e.target.value })} required />
-              <Input type="email" placeholder="Email" value={bookingForm.client_email} onChange={e => setBookingForm({ ...bookingForm, client_email: e.target.value })} required />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <Input placeholder="Phone" value={bookingForm.client_phone} onChange={e => setBookingForm({ ...bookingForm, client_phone: e.target.value })} />
-              <Input type="date" value={bookingForm.event_date} onChange={e => setBookingForm({ ...bookingForm, event_date: e.target.value })} />
-            </div>
-            <Input placeholder="Event Type (Wedding, Portrait, etc.)" value={bookingForm.event_type} onChange={e => setBookingForm({ ...bookingForm, event_type: e.target.value })} />
-            <Textarea placeholder="Tell us about your event..." value={bookingForm.message} onChange={e => setBookingForm({ ...bookingForm, message: e.target.value })} />
-            <Button type="submit" className="w-full">Submit Booking</Button>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-
   return (
-    <div className="min-h-screen bg-background">
-      <SiteHeader fixed extraActions={bookNowActions} />
+    <MarketingPage headerFixed extraActions={<BookSessionDialog />}>
 
       {/* Hero */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
@@ -145,33 +85,20 @@ export default function HomePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/portfolio">
-              <Button size="lg" className="bg-white text-black hover:bg-white/90 font-semibold px-8">
-                View Portfolio <ArrowRight className="ml-2 h-4 w-4" />
+              <Button
+                size="lg"
+                className="bg-white text-neutral-900 hover:bg-neutral-100 font-semibold px-8 shadow-md border-0"
+              >
+                View portfolio <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Dialog>
-              <DialogTrigger asChild>
+            <BookSessionDialog
+              trigger={
                 <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 font-semibold px-8">
-                  Book a Session
+                  Book a session
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-lg">
-                <DialogHeader><DialogTitle>Book a Session</DialogTitle></DialogHeader>
-                <form onSubmit={handleBookingSubmit} className="space-y-4 mt-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input placeholder="Your Name" value={bookingForm.client_name} onChange={e => setBookingForm({ ...bookingForm, client_name: e.target.value })} required />
-                    <Input type="email" placeholder="Email" value={bookingForm.client_email} onChange={e => setBookingForm({ ...bookingForm, client_email: e.target.value })} required />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input placeholder="Phone" value={bookingForm.client_phone} onChange={e => setBookingForm({ ...bookingForm, client_phone: e.target.value })} />
-                    <Input type="date" value={bookingForm.event_date} onChange={e => setBookingForm({ ...bookingForm, event_date: e.target.value })} />
-                  </div>
-                  <Input placeholder="Event Type" value={bookingForm.event_type} onChange={e => setBookingForm({ ...bookingForm, event_type: e.target.value })} />
-                  <Textarea placeholder="Tell us about your event..." value={bookingForm.message} onChange={e => setBookingForm({ ...bookingForm, message: e.target.value })} />
-                  <Button type="submit" className="w-full">Submit Booking</Button>
-                </form>
-              </DialogContent>
-            </Dialog>
+              }
+            />
           </div>
         </div>
       </section>
@@ -325,29 +252,13 @@ export default function HomePage() {
             Let us create timeless memories together. Book your session today and experience photography that goes beyond the ordinary.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Dialog>
-              <DialogTrigger asChild>
+            <BookSessionDialog
+              trigger={
                 <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold px-8">
-                  Book Now <Calendar className="ml-2 h-4 w-4" />
+                  Book now <Calendar className="ml-2 h-4 w-4" />
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-lg">
-                <DialogHeader><DialogTitle>Book a Session</DialogTitle></DialogHeader>
-                <form onSubmit={handleBookingSubmit} className="space-y-4 mt-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input placeholder="Your Name" value={bookingForm.client_name} onChange={e => setBookingForm({ ...bookingForm, client_name: e.target.value })} required />
-                    <Input type="email" placeholder="Email" value={bookingForm.client_email} onChange={e => setBookingForm({ ...bookingForm, client_email: e.target.value })} required />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input placeholder="Phone" value={bookingForm.client_phone} onChange={e => setBookingForm({ ...bookingForm, client_phone: e.target.value })} />
-                    <Input type="date" value={bookingForm.event_date} onChange={e => setBookingForm({ ...bookingForm, event_date: e.target.value })} />
-                  </div>
-                  <Input placeholder="Event Type" value={bookingForm.event_type} onChange={e => setBookingForm({ ...bookingForm, event_type: e.target.value })} />
-                  <Textarea placeholder="Tell us about your event..." value={bookingForm.message} onChange={e => setBookingForm({ ...bookingForm, message: e.target.value })} />
-                  <Button type="submit" className="w-full">Submit Booking</Button>
-                </form>
-              </DialogContent>
-            </Dialog>
+              }
+            />
             <Link href="/contact">
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 font-semibold px-8">
                 Contact Us
@@ -356,8 +267,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      <SiteFooter />
-    </div>
+    </MarketingPage>
   );
 }

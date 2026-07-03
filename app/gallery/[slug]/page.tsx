@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/lib/supabase';
-import { SiteHeader } from '@/components/layout/site-header';
+import { MarketingPage } from '@/components/layout/marketing-page';
 import { toast } from '@/hooks/use-toast';
 
 type AccessStep = 'register' | 'otp' | 'password' | 'gallery';
@@ -281,8 +281,7 @@ export default function GalleryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <SiteHeader showNav={false} />
+    <MarketingPage showNav={false} showFooter={false}>
 
       {/* Gallery Info */}
       <section className="py-8 bg-muted/20">
@@ -434,17 +433,6 @@ export default function GalleryPage() {
           )}
         </div>
       )}
-
-      {/* Footer */}
-      <footer className="border-t py-8">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Camera className="h-5 w-5 text-primary" />
-            <span className="font-[family-name:var(--font-playfair)] font-bold">Rub Shoots</span>
-          </div>
-          <p className="text-sm text-muted-foreground">Professional Photography Services</p>
-        </div>
-      </footer>
-    </div>
+    </MarketingPage>
   );
 }

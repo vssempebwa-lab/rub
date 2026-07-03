@@ -21,6 +21,22 @@ export type NavItem = {
   icon: LucideIcon;
 };
 
+export function getDashboardPageTitle(pathname: string): string {
+  for (const items of Object.values(dashboardNavigation)) {
+    const match = items.find((item) => item.href === pathname);
+    if (match) return match.label;
+  }
+
+  const segment = pathname.split('/').pop()?.replace(/-/g, ' ');
+  return segment ? segment.charAt(0).toUpperCase() + segment.slice(1) : 'Dashboard';
+}
+
+export const roleLabels: Record<UserRole, string> = {
+  admin: 'Admin workspace',
+  photographer: 'Photographer workspace',
+  client: 'Client portal',
+};
+
 export const dashboardNavigation: Record<UserRole, NavItem[]> = {
   admin: [
     { label: 'Dashboard', href: '/dashboard/admin', icon: LayoutDashboard },

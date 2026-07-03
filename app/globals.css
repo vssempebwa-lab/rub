@@ -71,4 +71,14 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  .marketing-site {
+    --shell-accent: 30 20% 98%;
+    background: hsl(var(--shell-accent));
+  }
+
+  .app-shell {
+    --shell-accent: 220 14% 96%;
+    background: hsl(var(--shell-accent));
+  }
 }

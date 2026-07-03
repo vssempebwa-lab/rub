@@ -6,7 +6,7 @@ import { Camera, Phone, Mail, MapPin, Clock, Instagram, Facebook, Twitter, Send 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { SiteHeader } from '@/components/layout/site-header';
+import { MarketingPage } from '@/components/layout/marketing-page';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
 
@@ -35,8 +35,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <SiteHeader />
+    <MarketingPage>
 
       {/* Hero */}
       <section className="py-20 lg:py-28 bg-muted/20">
@@ -155,17 +154,6 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-background border-t py-12">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Camera className="h-6 w-6 text-primary" />
-            <span className="font-[family-name:var(--font-playfair)] text-xl font-bold">Rub Shoots</span>
-          </div>
-          <p className="text-sm text-muted-foreground"> Rub Shoots Photography. All rights reserved.</p>
-        </div>
-      </footer>
-    </div>
+    </MarketingPage>
   );
 }

@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Camera, LayoutDashboard, Menu, X } from 'lucide-react';
+import { Camera, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSession } from '@/features/auth/hooks/use-session';
-import { SignOutButton } from '@/features/auth/components/sign-out-button';
+import { UserAccountMenu } from '@/components/layout/user-account-menu';
+import { BookSessionDialog } from '@/components/layout/book-session-dialog';
 import { getDashboardPath } from '@/features/auth/utils/dashboard-path';
 
 const NAV_LINKS = [
@@ -30,29 +31,34 @@ export function SiteHeader({ fixed = false, showNav = true, extraActions }: Site
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const dashboardPath = getDashboardPath(role);
-  const displayName = profile?.full_name || profile?.email?.split('@')[0] || 'Account';
+  const closeMobile = () => setMobileMenuOpen(false);
 
   return (
     <header
-      className={`${fixed ? 'fixed top-0 left-0 right-0 z-50' : ''} bg-background/80 backdrop-blur-md border-b`}
+      className={`${fixed ? 'fixed top-0 left-0 right-0 z-50' : 'sticky top-0 z-40'} marketing-header border-b border-border/60 bg-background/90 backdrop-blur-md`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-20">
-          <Link href="/" className="flex items-center gap-2">
-            <Camera className="h-6 w-6 text-primary" />
-            <span className="font-[family-name:var(--font-playfair)] text-xl font-bold">Rub Shoots</span>
+        <div className="flex items-center justify-between h-16 lg:h-[4.5rem]">
+          <Link href="/" className="flex items-center gap-3 group">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 group-hover:bg-primary/15 transition-colors">
+              <Camera className="h-5 w-5 text-primary" />
+            </span>
+            <div className="leading-tight">
+              <span className="font-[family-name:var(--font-playfair)] text-lg font-bold block">Rub Shoots</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Photography Studio</span>
+            </div>
           </Link>
 
           {showNav && (
-            <nav className="hidden lg:flex items-center gap-8">
+            <nav className="hidden lg:flex items-center gap-1" aria-label="Main navigation">
               {NAV_LINKS.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-sm font-medium transition-colors ${
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     pathname === link.href
-                      ? 'text-foreground'
-                      : 'text-muted-foreground hover:text-foreground'
+                      ? 'bg-primary/10 text-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
                   }`}
                 >
                   {link.label}
@@ -61,34 +67,30 @@ export function SiteHeader({ fixed = false, showNav = true, extraActions }: Site
             </nav>
           )}
 
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-2">
             {extraActions}
             {!loading && (
-              isAuthenticated ? (
+              isAuthenticated && profile ? (
+                <UserAccountMenu profile={profile} role={role} onSignOut={signOut} />
+              ) : (
                 <>
-                  <Link href={dashboardPath}>
-                    <Button variant="ghost" size="sm" className="gap-2">
-                      <LayoutDashboard className="h-4 w-4" />
-                      Dashboard
+                  <Link href="/login">
+                    <Button variant="ghost" size="sm" className="text-muted-foreground">
+                      Client portal
                     </Button>
                   </Link>
-                  <span className="text-sm text-muted-foreground hidden xl:inline">
-                    {displayName}
-                  </span>
-                  <SignOutButton onSignOut={signOut} />
+                  {extraActions ? null : <BookSessionDialog />}
                 </>
-              ) : (
-                <Link href="/login">
-                  <Button variant="ghost" size="sm">Sign In</Button>
-                </Link>
               )
             )}
           </div>
 
           <button
-            className="lg:hidden"
+            type="button"
+            className="lg:hidden p-2 -mr-2 rounded-md hover:bg-muted"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
@@ -96,47 +98,33 @@ export function SiteHeader({ fixed = false, showNav = true, extraActions }: Site
       </div>
 
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t bg-background px-4 py-4 space-y-3">
+        <div className="lg:hidden border-t bg-background px-4 py-4 space-y-1">
           {showNav && NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`block text-sm font-medium py-2 ${
-                pathname === link.href ? 'text-foreground' : 'text-muted-foreground'
+              className={`block rounded-md px-3 py-2.5 text-sm font-medium ${
+                pathname === link.href ? 'bg-primary/10 text-foreground' : 'text-muted-foreground'
               }`}
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={closeMobile}
             >
               {link.label}
             </Link>
           ))}
-          {extraActions && <div className="pt-2 border-t">{extraActions}</div>}
+          {extraActions && <div className="pt-3 mt-2 border-t space-y-2">{extraActions}</div>}
           {!loading && (
-            isAuthenticated ? (
-              <>
-                <Link
-                  href={dashboardPath}
-                  className="flex items-center gap-2 text-sm font-medium py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <LayoutDashboard className="h-4 w-4" />
-                  Dashboard
-                </Link>
-                <p className="text-sm text-muted-foreground py-1">{displayName}</p>
-                <SignOutButton
-                  display="menu"
-                  onSignOut={signOut}
-                  onOpen={() => setMobileMenuOpen(false)}
-                />
-              </>
-            ) : (
-              <Link
-                href="/login"
-                className="block text-sm font-medium py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Sign In
-              </Link>
-            )
+            <div className="pt-3 mt-2 border-t space-y-2">
+              {isAuthenticated && profile ? (
+                <UserAccountMenu profile={profile} role={role} onSignOut={signOut} onNavigate={closeMobile} />
+              ) : (
+                <>
+                  <Link href="/login" onClick={closeMobile}>
+                    <Button variant="outline" className="w-full">Client portal</Button>
+                  </Link>
+                  <BookSessionDialog trigger={<Button className="w-full">Book a session</Button>} />
+                </>
+              )}
+            </div>
           )}
         </div>
       )}
