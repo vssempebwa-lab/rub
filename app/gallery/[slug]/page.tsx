@@ -121,7 +121,7 @@ export default function GalleryPage() {
     const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
     setOtpCode(generatedOtp);
     setOtpSent(true);
-    toast({ title: 'OTP sent', description: `Code ${generatedOtp} sent to ${visitorPhone}`, variant: 'success' });
+    toast({ title: 'OTP sent', description: `Code ${generatedOtp} sent to ${visitorPhone}`, variant: 'default' });
     setAccessStep('otp');
   }
 
@@ -132,7 +132,7 @@ export default function GalleryPage() {
     }
     if (enteredOtp === otpCode) {
       setAccessStep('password');
-      toast({ title: 'OTP verified', description: 'Now enter the event password to unlock.', variant: 'success' });
+      toast({ title: 'OTP verified', description: 'Now enter the event password to unlock.', variant: 'default' });
     } else {
       toast({ title: 'Invalid OTP', description: 'Please check the code and try again.', variant: 'destructive' });
     }
