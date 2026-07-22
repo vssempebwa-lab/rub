@@ -25,22 +25,26 @@ export default function ClientDashboard() {
   }, []);
 
   async function loadData() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
 
-    const [
-      { data: eventsData },
-      { count: favCount },
-      { count: dlCount },
-    ] = await Promise.all([
-      supabase.from('events').select('*').eq('client_id', session.user.id).order('created_at', { ascending: false }),
-      supabase.from('favorites').select('*', { count: 'exact', head: true }).eq('client_email', session.user.email),
-      supabase.from('downloads').select('*', { count: 'exact', head: true }).eq('downloader_email', session.user.email),
-    ]);
+      const [
+        { data: eventsData },
+        { count: favCount },
+        { count: dlCount },
+      ] = await Promise.all([
+        supabase.from('events').select('*').eq('client_id', session.user.id).order('created_at', { ascending: false }),
+        supabase.from('favorites').select('*', { count: 'exact', head: true }).eq('client_email', session.user.email),
+        supabase.from('downloads').select('*', { count: 'exact', head: true }).eq('downloader_email', session.user.email),
+      ]);
 
-    if (eventsData) setMyEvents(eventsData);
-    setFavoritesCount(favCount || 0);
-    setDownloadsCount(dlCount || 0);
+      if (eventsData) setMyEvents(eventsData);
+      setFavoritesCount(favCount || 0);
+      setDownloadsCount(dlCount || 0);
+    } catch {
+      // Session fetch failed; dashboard will show empty state
+    }
   }
 
   return (
