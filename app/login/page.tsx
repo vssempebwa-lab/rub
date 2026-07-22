@@ -26,19 +26,23 @@ export default function LoginPage() {
 
   useEffect(() => {
     async function checkExistingSession() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setCheckingSession(false);
+          return;
+        }
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+
+        router.replace(getDashboardPath(profile?.role));
+      } catch {
         setCheckingSession(false);
-        return;
       }
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
-
-      router.replace(getDashboardPath(profile?.role));
     }
 
     checkExistingSession();

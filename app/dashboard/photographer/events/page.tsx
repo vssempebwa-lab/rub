@@ -93,15 +93,18 @@ export default function PhotographerEventsPage() {
 
   async function loadEvents() {
     setLoading(true);
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      setLoading(false);
-      return;
-    }
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setLoading(false);
+        return;
+      }
 
-    const { data } = await supabase.from('events').select('*').eq('photographer_id', session.user.id).order('created_at', { ascending: false });
-    setEvents(data || []);
-    setLoading(false);
+      const { data } = await supabase.from('events').select('*').eq('photographer_id', session.user.id).order('created_at', { ascending: false });
+      setEvents(data || []);
+    } finally {
+      setLoading(false);
+    }
   }
 
   function openCreateDialog() {
