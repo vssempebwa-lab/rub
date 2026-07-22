@@ -23,6 +23,12 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+dev-server.*.log
+
+# local media and archives
+/Photos/
+*.tgz
+*.zip
 
 # local env files
 .env

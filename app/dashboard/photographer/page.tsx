@@ -20,17 +20,14 @@ export default function PhotographerDashboard() {
 
   async function loadStats() {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
       const [
         { count: eventsCount },
         { count: photosCount },
         { data: recentEvents },
       ] = await Promise.all([
-        supabase.from('events').select('*', { count: 'exact', head: true }).eq('photographer_id', session.user.id),
-        supabase.from('photos').select('*', { count: 'exact', head: true }).eq('event_id', session.user.id),
-        supabase.from('events').select('*').eq('photographer_id', session.user.id).order('created_at', { ascending: false }).limit(5),
+        supabase.from('events').select('*', { count: 'exact', head: true }),
+        supabase.from('photos').select('*', { count: 'exact', head: true }),
+        supabase.from('events').select('*').order('created_at', { ascending: false }).limit(5),
       ]);
 
       setStats({
@@ -40,7 +37,7 @@ export default function PhotographerDashboard() {
         recentEvents: recentEvents || [],
       });
     } catch {
-      // Session fetch failed; dashboard will show empty state
+      // Fetch failed; dashboard will show empty state
     }
   }
 

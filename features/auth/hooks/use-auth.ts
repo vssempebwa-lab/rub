@@ -7,7 +7,7 @@ import { signOutUser } from '@/features/auth/utils/sign-out';
 import { getDashboardPath } from '@/features/auth/utils/dashboard-path';
 import type { Profile } from '@/types';
 
-export function useAuth({ redirectTo = '/login' }: { redirectTo?: string } = {}) {
+export function useAuth({ redirectTo }: { redirectTo?: string } = {}) {
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,8 +21,11 @@ export function useAuth({ redirectTo = '/login' }: { redirectTo?: string } = {})
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
-          if (mounted && !signingOutRef.current) {
+          if (mounted && !signingOutRef.current && redirectTo) {
             router.push(redirectTo);
+          } else if (mounted) {
+            setLoading(false);
+            setError('Not authenticated');
           }
           return;
         }
@@ -48,15 +51,21 @@ export function useAuth({ redirectTo = '/login' }: { redirectTo?: string } = {})
 
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session && !signingOutRef.current) {
-        router.push(redirectTo);
-      }
-    });
+    let subscription: { unsubscribe: () => void } | null = null;
+    try {
+      const authResult = supabase.auth.onAuthStateChange((_event, session) => {
+        if (!session && !signingOutRef.current && redirectTo) {
+          router.push(redirectTo);
+        }
+      });
+      subscription = authResult.data.subscription;
+    } catch {
+      // Auth listener failed; continue without real-time auth updates
+    }
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      subscription?.unsubscribe();
     };
   }, [redirectTo, router]);
 

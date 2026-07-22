@@ -3,12 +3,16 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Camera, Menu, X } from 'lucide-react';
+import { Camera, Menu, X, LayoutDashboard, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useSession } from '@/features/auth/hooks/use-session';
-import { UserAccountMenu } from '@/components/layout/user-account-menu';
-import { BookSessionDialog } from '@/components/layout/book-session-dialog';
-import { getDashboardPath } from '@/features/auth/utils/dashboard-path';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useWebsiteContent } from '@/features/website/hooks/use-website-content';
 
 const NAV_LINKS = [
@@ -28,11 +32,9 @@ type SiteHeaderProps = {
 
 export function SiteHeader({ fixed = false, showNav = true, extraActions }: SiteHeaderProps) {
   const pathname = usePathname();
-  const { profile, loading, signOut, role, isAuthenticated } = useSession();
   const { business } = useWebsiteContent();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const dashboardPath = getDashboardPath(role);
   const closeMobile = () => setMobileMenuOpen(false);
 
   return (
@@ -70,21 +72,38 @@ export function SiteHeader({ fixed = false, showNav = true, extraActions }: Site
           )}
 
           <div className="hidden lg:flex items-center gap-2">
-            {extraActions}
-            {!loading && (
-              isAuthenticated && profile ? (
-                <UserAccountMenu profile={profile} role={role} onSignOut={signOut} />
-              ) : (
-                <>
-                  <Link href="/login">
-                    <Button variant="ghost" size="sm" className="text-muted-foreground">
-                      Client portal
-                    </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <LayoutDashboard className="h-4 w-4" />
+                  <span>Workspace</span>
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuLabel>Choose workspace</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/admin" className="cursor-pointer">
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    Admin
                   </Link>
-                  {extraActions ? null : <BookSessionDialog />}
-                </>
-              )
-            )}
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/photographer" className="cursor-pointer">
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    Photographer
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/client" className="cursor-pointer">
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    Client
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {extraActions}
           </div>
 
           <button
@@ -113,21 +132,40 @@ export function SiteHeader({ fixed = false, showNav = true, extraActions }: Site
               {link.label}
             </Link>
           ))}
-          {extraActions && <div className="pt-3 mt-2 border-t space-y-2">{extraActions}</div>}
-          {!loading && (
-            <div className="pt-3 mt-2 border-t space-y-2">
-              {isAuthenticated && profile ? (
-                <UserAccountMenu profile={profile} role={role} onSignOut={signOut} onNavigate={closeMobile} />
-              ) : (
-                <>
-                  <Link href="/login" onClick={closeMobile}>
-                    <Button variant="outline" className="w-full">Client portal</Button>
+          <div className="pt-3 mt-2 border-t">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                  <LayoutDashboard className="h-4 w-4" />
+                  <span>Workspace</span>
+                  <ChevronDown className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-52">
+                <DropdownMenuLabel>Choose workspace</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/admin" className="cursor-pointer" onClick={closeMobile}>
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    Admin
                   </Link>
-                  <BookSessionDialog trigger={<Button className="w-full">Book a session</Button>} />
-                </>
-              )}
-            </div>
-          )}
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/photographer" className="cursor-pointer" onClick={closeMobile}>
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    Photographer
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/client" className="cursor-pointer" onClick={closeMobile}>
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    Client
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          {extraActions && <div className="pt-3 mt-2 border-t space-y-2">{extraActions}</div>}
         </div>
       )}
     </header>

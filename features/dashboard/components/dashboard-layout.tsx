@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Camera, Globe, Menu, X } from 'lucide-react';
@@ -11,9 +11,25 @@ import { dashboardNavigation, getDashboardPageTitle, roleLabels } from '@/featur
 import { getDashboardPath } from '@/features/auth/utils/dashboard-path';
 import type { UserRole } from '@/types';
 
+function DashboardSidebarSkeleton() {
+  return (
+    <div className="fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border/80 animate-pulse">
+      <div className="h-16 border-b" />
+      <div className="p-4 border-b">
+        <div className="h-10 w-10 rounded-full bg-muted" />
+      </div>
+      <div className="p-3 space-y-2">
+        <div className="h-8 w-full rounded-md bg-muted" />
+        <div className="h-8 w-full rounded-md bg-muted" />
+        <div className="h-8 w-full rounded-md bg-muted" />
+      </div>
+    </div>
+  );
+}
+
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { profile, loading, signOut, role } = useAuth();
+  const { profile, loading, signOut, role, error } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const currentNav = dashboardNavigation[role as UserRole] ?? dashboardNavigation.client;
@@ -23,18 +39,21 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="app-shell min-h-screen flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+      <div className="app-shell min-h-screen flex items-center justify-center" suppressHydrationWarning>
+        <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" suppressHydrationWarning />
       </div>
     );
   }
 
+  const fallbackRole = (role as UserRole) || 'client';
+
   return (
-    <div className="app-shell min-h-screen flex">
+    <div className="app-shell min-h-screen flex" suppressHydrationWarning>
       <aside
         className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border/80 transform transition-transform duration-200 lg:translate-x-0 lg:static lg:inset-auto ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
+        suppressHydrationWarning
       >
         <div className="h-full flex flex-col">
           <div className="h-16 flex items-center px-5 border-b">

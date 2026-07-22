@@ -34,12 +34,10 @@ export default function PhotoUploadPage() {
 
   async function loadEvents() {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-      const { data } = await supabase.from('events').select('id, name').eq('photographer_id', session.user.id).order('created_at', { ascending: false });
+      const { data } = await supabase.from('events').select('id, name').order('created_at', { ascending: false });
       if (data) setEvents(data);
     } catch {
-      // Session fetch failed
+      // Fetch failed
     }
   }
 

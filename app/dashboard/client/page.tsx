@@ -26,24 +26,21 @@ export default function ClientDashboard() {
 
   async function loadData() {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
       const [
         { data: eventsData },
         { count: favCount },
         { count: dlCount },
       ] = await Promise.all([
-        supabase.from('events').select('*').eq('client_id', session.user.id).order('created_at', { ascending: false }),
-        supabase.from('favorites').select('*', { count: 'exact', head: true }).eq('client_email', session.user.email),
-        supabase.from('downloads').select('*', { count: 'exact', head: true }).eq('downloader_email', session.user.email),
+        supabase.from('events').select('*').order('created_at', { ascending: false }),
+        supabase.from('favorites').select('*', { count: 'exact', head: true }),
+        supabase.from('downloads').select('*', { count: 'exact', head: true }),
       ]);
 
       if (eventsData) setMyEvents(eventsData);
       setFavoritesCount(favCount || 0);
       setDownloadsCount(dlCount || 0);
     } catch {
-      // Session fetch failed; dashboard will show empty state
+      // Fetch failed; dashboard will show empty state
     }
   }
 

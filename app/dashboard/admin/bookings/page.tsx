@@ -32,8 +32,12 @@ export default function AdminBookingsPage() {
   }, []);
 
   async function loadBookings() {
-    const { data } = await supabase.from('bookings').select('*').order('created_at', { ascending: false });
-    if (data) setBookings(data);
+    try {
+      const { data } = await supabase.from('bookings').select('*').order('created_at', { ascending: false });
+      if (data) setBookings(data);
+    } catch {
+      // Leave state at defaults on error
+    }
   }
 
   async function updateStatus(id: string, status: string) {

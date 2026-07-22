@@ -46,13 +46,19 @@ export function useSession() {
 
     loadSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      loadSession();
-    });
+    let subscription: { unsubscribe: () => void } | null = null;
+    try {
+      const authResult = supabase.auth.onAuthStateChange(() => {
+        loadSession();
+      });
+      subscription = authResult.data.subscription;
+    } catch {
+      // Auth listener failed; continue without real-time session updates
+    }
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      subscription?.unsubscribe();
     };
   }, []);
 

@@ -31,8 +31,12 @@ export default function AdminGalleriesPage() {
   }, []);
 
   async function loadEvents() {
-    const { data } = await supabase.from('events').select('*').order('created_at', { ascending: false });
-    if (data) setEvents(data);
+    try {
+      const { data } = await supabase.from('events').select('*').order('created_at', { ascending: false });
+      if (data) setEvents(data);
+    } catch {
+      // Leave state at defaults on error
+    }
   }
 
   async function togglePublic(id: string, current: boolean) {

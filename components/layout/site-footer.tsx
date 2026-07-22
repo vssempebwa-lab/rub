@@ -1,17 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { Camera, Phone, Mail, MapPin, Clock, LayoutDashboard, LogIn } from 'lucide-react';
-import { useSession } from '@/features/auth/hooks/use-session';
-import { getDashboardPath } from '@/features/auth/utils/dashboard-path';
+import { Camera, Phone, Mail, MapPin, Clock } from 'lucide-react';
 import { NAV_LINKS } from '@/components/layout/site-header';
 import { useWebsiteContent } from '@/features/website/hooks/use-website-content';
 import { SocialLinksBar } from '@/features/website/components/social-links';
 
 export function SiteFooter() {
-  const { isAuthenticated, role, loading } = useSession();
-  const { business, loading: contentLoading } = useWebsiteContent();
-  const dashboardPath = getDashboardPath(role);
+  const { business } = useWebsiteContent();
 
   const primaryPhone = business.phones[0] ?? '';
   const primaryEmail = business.emails[0] ?? '';
@@ -56,25 +52,8 @@ export function SiteFooter() {
           </div>
 
           <div className="md:col-span-2">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">For clients</h4>
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Clients</h4>
             <ul className="space-y-2.5">
-              {!loading && (
-                isAuthenticated ? (
-                  <li>
-                    <Link href={dashboardPath} className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">
-                      <LayoutDashboard className="h-4 w-4" />
-                      Your workspace
-                    </Link>
-                  </li>
-                ) : (
-                  <li>
-                    <Link href="/login" className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">
-                      <LogIn className="h-4 w-4" />
-                      Client portal login
-                    </Link>
-                  </li>
-                )
-              )}
               <li>
                 <Link href="/portfolio" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   View galleries
@@ -90,8 +69,7 @@ export function SiteFooter() {
         </div>
 
         <div className="border-t mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} {business.footerCopyright || `${business.businessName} Photography. All rights reserved.`}</p>
-          <p>Public website · <Link href="/login" className="hover:text-foreground underline-offset-4 hover:underline">Staff & client login</Link></p>
+          <p>© {new Date().getFullYear()} {business.businessName} Photography. All rights reserved.</p>
         </div>
       </div>
     </footer>
