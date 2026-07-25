@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { useRequireAdmin } from '@/features/auth/hooks/use-require-admin';
+import { useRequirePhotographer } from '@/features/auth/hooks/use-require-photographer';
 import { defaultSiteContent } from '@/features/website/defaults';
 import {
   fetchAllSiteContent,
@@ -81,7 +81,7 @@ function StringListEditor({
 }
 
 export function WebsiteManager() {
-  const { loading: authLoading, isAdmin } = useRequireAdmin();
+  const { loading: authLoading, hasWorkspaceAccess } = useRequirePhotographer();
   const [content, setContent] = useState<SiteContentMap>(defaultSiteContent);
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [faqs, setFaqs] = useState<SiteFaq[]>([]);
@@ -90,8 +90,8 @@ export function WebsiteManager() {
   const [saving, setSaving] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isAdmin) loadAll();
-  }, [isAdmin]);
+    if (hasWorkspaceAccess) loadAll();
+  }, [hasWorkspaceAccess]);
 
   async function loadAll() {
     setLoading(true);
@@ -200,7 +200,7 @@ export function WebsiteManager() {
     );
   }
 
-  if (!isAdmin) return null;
+  if (!hasWorkspaceAccess) return null;
 
   const business = content.business;
 

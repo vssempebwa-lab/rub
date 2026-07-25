@@ -21,7 +21,7 @@ export default function LoginPage() {
     email: '',
     password: '',
     fullName: '',
-    role: 'client' as 'client' | 'photographer',
+    role: 'photographer' as 'photographer',
   });
 
   useEffect(() => {
@@ -119,12 +119,12 @@ export default function LoginPage() {
           </Link>
         </div>
         <div className="relative z-10 max-w-md">
-          <p className="text-xs uppercase tracking-[0.25em] text-white/70 mb-3">Client & team portal</p>
+          <p className="text-xs uppercase tracking-[0.25em] text-white/70 mb-3">Photographer workspace</p>
           <h1 className="font-[family-name:var(--font-playfair)] text-4xl font-bold mb-4 leading-tight">
-            Your galleries, bookings, and workspace — separate from our public site.
+            Your galleries, bookings, and workspace, separate from our public site.
           </h1>
           <p className="text-white/80 text-sm leading-relaxed">
-            Sign in to manage events, upload photos, review bookings, or access your private galleries. Visitors browsing our portfolio stay on the public website.
+            Sign in to manage events, upload photos, and review bookings. Visitors browsing our portfolio stay on the public website.
           </p>
         </div>
         <Link href="/" className="relative z-10 inline-flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors">
@@ -147,8 +147,8 @@ export default function LoginPage() {
             <h2 className="text-2xl font-bold mb-2">{isLogin ? 'Sign in to workspace' : 'Create your account'}</h2>
             <p className="text-sm text-muted-foreground">
               {isLogin
-                ? 'For clients, photographers, and admins — not the public marketing site.'
-                : 'Register as a client or photographer to access your dashboard.'}
+                ? 'For photographers, not the public marketing site.'
+                : 'Register as a photographer to access your workspace.'}
             </p>
           </div>
 
@@ -196,27 +196,6 @@ export default function LoginPage() {
                   </button>
                 </div>
               </div>
-              {!isLogin && (
-                <div>
-                  <label className="text-sm font-medium mb-1.5 block">I am a</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {(['client', 'photographer'] as const).map((r) => (
-                      <button
-                        key={r}
-                        type="button"
-                        onClick={() => setForm({ ...form, role: r })}
-                        className={`py-2.5 rounded-lg text-sm font-medium border transition-colors capitalize ${
-                          form.role === r
-                            ? 'bg-primary text-primary-foreground border-primary'
-                            : 'bg-background border-input hover:bg-muted'
-                        }`}
-                      >
-                        {r}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? 'Please wait...' : isLogin ? 'Enter workspace' : 'Create account'}
                 <ArrowRight className="ml-2 h-4 w-4" />

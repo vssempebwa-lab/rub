@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Camera, Globe, Menu, X } from 'lucide-react';
@@ -29,13 +29,14 @@ function DashboardSidebarSkeleton() {
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { profile, loading, signOut, role, error } = useAuth();
+  const { profile, loading, signOut, role } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const currentNav = dashboardNavigation[role as UserRole] ?? dashboardNavigation.client;
+  const fallbackRole: UserRole = 'photographer';
+  const currentNav = dashboardNavigation.photographer;
   const dashboardHome = getDashboardPath(role);
   const pageTitle = getDashboardPageTitle(pathname);
-  const workspaceLabel = roleLabels[role as UserRole] ?? 'Workspace';
+  const workspaceLabel = roleLabels[fallbackRole] ?? 'Workspace';
 
   if (loading) {
     return (
@@ -44,8 +45,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-
-  const fallbackRole = (role as UserRole) || 'client';
 
   return (
     <div className="app-shell min-h-screen flex" suppressHydrationWarning>
@@ -56,7 +55,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         suppressHydrationWarning
       >
         <div className="h-full flex flex-col">
-          <div className="h-16 flex items-center px-5 border-b">
+          <div className="h-16 px-5 border-b flex items-center relative">
             <Link href={dashboardHome} className="flex items-center gap-2.5 min-w-0">
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
                 <Camera className="h-4 w-4" />
@@ -85,27 +84,17 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto py-3 px-3">
+          <div className="py-3 px-3 flex-1 overflow-y-auto">
             <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Manage</p>
             <nav className="space-y-0.5" aria-label="Workspace navigation">
-              {currentNav.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-primary text-primary-foreground shadow-sm'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                    }`}
-                    onClick={() => setSidebarOpen(false)}
-                  >
-                    <item.icon className="h-4 w-4 shrink-0" />
-                    {item.label}
-                  </Link>
-                );
-              })}
+              {currentNav.map((item) => (
+                <WorkspaceNavLink
+                  key={item.href}
+                  item={item}
+                  pathname={pathname}
+                  onNavigate={() => setSidebarOpen(false)}
+                />
+              ))}
             </nav>
           </div>
 
@@ -127,7 +116,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       )}
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-14 border-b bg-card/80 backdrop-blur-sm flex items-center justify-between px-4 lg:px-8 sticky top-0 z-30">
+        <header className="sticky h-14 border-b bg-card/80 backdrop-blur-sm flex items-center justify-between px-4 lg:px-8 top-0 z-30">
           <div className="flex items-center gap-3 min-w-0">
             <button type="button" className="lg:hidden p-1 -ml-1" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
               <Menu className="h-5 w-5" />
@@ -150,5 +139,32 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
     </div>
+  );
+}
+
+function WorkspaceNavLink({
+  item,
+  pathname,
+  onNavigate,
+}: {
+  item: (typeof dashboardNavigation)[keyof typeof dashboardNavigation][number];
+  pathname: string;
+  onNavigate: () => void;
+}) {
+  const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+  return (
+    <Link
+      href={item.href}
+      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+        isActive
+          ? 'bg-primary text-primary-foreground shadow-sm'
+          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+      }`}
+      onClick={onNavigate}
+    >
+      <item.icon className="h-4 w-4 shrink-0" />
+      <span className="min-w-0 truncate">{item.label}</span>
+    </Link>
   );
 }

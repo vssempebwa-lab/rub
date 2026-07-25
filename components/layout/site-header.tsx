@@ -81,24 +81,12 @@ export function SiteHeader({ fixed = false, showNav = true, extraActions }: Site
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuLabel>Choose workspace</DropdownMenuLabel>
+                <DropdownMenuLabel>Workspace</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/admin" className="cursor-pointer">
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                    Admin
-                  </Link>
-                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/dashboard/photographer" className="cursor-pointer">
                     <LayoutDashboard className="mr-2 h-4 w-4" />
                     Photographer
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/client" className="cursor-pointer">
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                    Client
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -142,24 +130,12 @@ export function SiteHeader({ fixed = false, showNav = true, extraActions }: Site
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-52">
-                <DropdownMenuLabel>Choose workspace</DropdownMenuLabel>
+                <DropdownMenuLabel>Workspace</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/admin" className="cursor-pointer" onClick={closeMobile}>
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                    Admin
-                  </Link>
-                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/dashboard/photographer" className="cursor-pointer" onClick={closeMobile}>
                     <LayoutDashboard className="mr-2 h-4 w-4" />
                     Photographer
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/client" className="cursor-pointer" onClick={closeMobile}>
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                    Client
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>

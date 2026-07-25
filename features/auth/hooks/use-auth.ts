@@ -74,7 +74,7 @@ export function useAuth({ redirectTo }: { redirectTo?: string } = {}) {
     await signOutUser();
   }
 
-  return { profile, loading, error, signOut, role: profile?.role ?? 'client' };
+  return { profile, loading, error, signOut, role: profile?.role ?? 'photographer' };
 }
 
 export { getDashboardPath };

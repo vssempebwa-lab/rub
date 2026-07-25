@@ -4,15 +4,15 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, getDashboardPath } from './use-auth';
 
-export function useRequireAdmin() {
+export function useRequirePhotographer() {
   const router = useRouter();
   const { profile, loading, role } = useAuth();
 
   useEffect(() => {
-    if (!loading && role !== 'admin') {
+    if (!loading && role !== 'photographer') {
       router.replace(getDashboardPath(role));
     }
   }, [loading, role, router]);
 
-  return { profile, loading, isAdmin: role === 'admin' };
+  return { profile, loading, hasWorkspaceAccess: role === 'photographer' };
 }
