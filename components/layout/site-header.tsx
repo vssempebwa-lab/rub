@@ -42,6 +42,7 @@ export function SiteHeader({ fixed = false, showNav = true, extraActions }: Site
   const brandName = business.businessName.toLowerCase().includes('photography')
     ? business.businessName
     : `${business.businessName} Photography`;
+  const logoUrl = settings.branding.logoUrl || '/logo.png';
 
   useEffect(() => {
     fetchSiteSettings().then(setSettings);
@@ -53,14 +54,14 @@ export function SiteHeader({ fixed = false, showNav = true, extraActions }: Site
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between min-h-20 py-3 lg:min-h-24">
-          <Link href="/" className="flex min-w-0 items-center gap-2 group">
-            {settings.branding.logoUrl ? (
-              <span className="flex h-14 w-32 shrink-0 items-center justify-start overflow-hidden sm:h-16 sm:w-40 lg:h-20 lg:w-48">
+          <Link href="/" className="flex min-w-0 items-center gap-0 group">
+            {logoUrl ? (
+              <span className="flex h-16 w-28 shrink-0 items-center justify-start overflow-hidden sm:h-20 sm:w-36 lg:h-24 lg:w-44">
                 <Image
-                  src={settings.branding.logoUrl}
+                  src={logoUrl}
                   alt={`${business.businessName} logo`}
-                  width={192}
-                  height={80}
+                  width={220}
+                  height={220}
                   className="h-full w-full object-contain object-left"
                   priority={fixed}
                 />
@@ -70,7 +71,7 @@ export function SiteHeader({ fixed = false, showNav = true, extraActions }: Site
                 <Camera className="h-5 w-5 text-primary" />
               </span>
             )}
-            <div className="min-w-0">
+            <div className="min-w-0 -ml-1 sm:-ml-2">
               <span className="font-[family-name:var(--font-playfair)] text-lg font-bold block truncate lg:text-xl">
                 {brandName}
               </span>
