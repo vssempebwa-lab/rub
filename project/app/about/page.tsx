@@ -44,7 +44,7 @@ export default function AboutPage() {
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center text-white">
           <h1 className="font-[family-name:var(--font-playfair)] text-4xl md:text-6xl font-bold mb-6">Our Story</h1>
           <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto">
-            Two decades of capturing joy, love, and life's most precious moments across Ghana and beyond.
+            Two decades of capturing joy, love, and life's most precious moments across Uganda and beyond.
           </p>
         </div>
       </section>
@@ -56,7 +56,7 @@ export default function AboutPage() {
             <div>
               <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold mb-6">Passion Meets Precision</h2>
               <p className="text-muted-foreground mb-4 leading-relaxed">
-                Founded in 2008, Rub Shoots Photography began as a small studio in Accra with a simple mission: to capture authentic moments that families and couples would treasure forever.
+                Founded in 2008, Rub Shoots Photography began as a small studio in Kampala with a simple mission: to capture authentic moments that families and couples would treasure forever.
               </p>
               <p className="text-muted-foreground mb-4 leading-relaxed">
                 What started as a one-person operation has grown into a full-service photography company with a team of talented photographers, editors, and creative professionals.
@@ -102,7 +102,7 @@ export default function AboutPage() {
             <div className="bg-card border rounded-xl p-8">
               <h3 className="font-[family-name:var(--font-playfair)] text-2xl font-bold mb-4">Our Vision</h3>
               <p className="text-muted-foreground leading-relaxed">
-                To be the most trusted and sought-after photography studio in West Africa, known for our artistry, professionalism, and innovative approach to visual storytelling. We aim to set the standard for excellence in the photography industry.
+                To be the most trusted and sought-after photography studio in East Africa, known for our artistry, professionalism, and innovative approach to visual storytelling. We aim to set the standard for excellence in the photography industry.
               </p>
             </div>
           </div>

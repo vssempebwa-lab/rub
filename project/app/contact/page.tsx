@@ -103,7 +103,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold mb-1">Phone</h3>
-                    <p className="text-muted-foreground text-sm">+256 705 500 291</p>
+                    <p className="text-muted-foreground text-sm">0705 500291</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -121,7 +121,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold mb-1">Location</h3>
-                    <p className="text-muted-foreground text-sm">Kampala, Uganda</p>
+                    <p className="text-muted-foreground text-sm">Adonai Plaza Opp Be Energy Petrol Station</p>
+                    <p className="text-muted-foreground text-sm">Kampala - Entebbe Rd, Kampala</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -188,7 +189,7 @@ export default function ContactPage() {
         <div className="h-80 bg-muted/30 flex items-center justify-center">
           <div className="text-center">
             <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground font-medium">Kampala-Uganda</p>
+            <p className="text-muted-foreground font-medium">Adonai Plaza Opp Be Energy Petrol Station, Kampala - Entebbe Rd, Kampala</p>
             <p className="text-sm text-muted-foreground mt-1">Interactive map would be displayed here</p>
           </div>
         </div>

@@ -32,8 +32,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { profile, loading, signOut, role } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const fallbackRole: UserRole = 'photographer';
-  const currentNav = dashboardNavigation.photographer;
+  const fallbackRole: UserRole = role === 'admin' ? 'admin' : 'photographer';
+  const currentNav = dashboardNavigation[fallbackRole];
   const dashboardHome = getDashboardPath(role);
   const pageTitle = getDashboardPageTitle(pathname);
   const workspaceLabel = roleLabels[fallbackRole] ?? 'Workspace';

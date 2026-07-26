@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Camera, Menu, X, LayoutDashboard, ChevronDown } from 'lucide-react';
@@ -14,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useWebsiteContent } from '@/features/website/hooks/use-website-content';
+import { defaultSiteSettings, fetchSiteSettings } from '@/features/website/site-settings';
 
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
@@ -33,23 +35,45 @@ type SiteHeaderProps = {
 export function SiteHeader({ fixed = false, showNav = true, extraActions }: SiteHeaderProps) {
   const pathname = usePathname();
   const { business } = useWebsiteContent();
+  const [settings, setSettings] = useState(defaultSiteSettings);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const closeMobile = () => setMobileMenuOpen(false);
+  const brandName = business.businessName.toLowerCase().includes('photography')
+    ? business.businessName
+    : `${business.businessName} Photography`;
+
+  useEffect(() => {
+    fetchSiteSettings().then(setSettings);
+  }, []);
 
   return (
     <header
       className={`${fixed ? 'fixed top-0 left-0 right-0 z-50' : 'sticky top-0 z-40'} marketing-header border-b border-border/60 bg-background/90 backdrop-blur-md`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-[4.5rem]">
-          <Link href="/" className="flex items-center gap-3 group">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 group-hover:bg-primary/15 transition-colors">
-              <Camera className="h-5 w-5 text-primary" />
-            </span>
-            <div className="leading-tight">
-              <span className="font-[family-name:var(--font-playfair)] text-lg font-bold block">{business.businessName}</span>
-              <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{business.tagline}</span>
+        <div className="flex items-center justify-between min-h-20 py-3 lg:min-h-24">
+          <Link href="/" className="flex min-w-0 items-center gap-2 group">
+            {settings.branding.logoUrl ? (
+              <span className="flex h-14 w-32 shrink-0 items-center justify-start overflow-hidden sm:h-16 sm:w-40 lg:h-20 lg:w-48">
+                <Image
+                  src={settings.branding.logoUrl}
+                  alt={`${business.businessName} logo`}
+                  width={192}
+                  height={80}
+                  className="h-full w-full object-contain object-left"
+                  priority={fixed}
+                />
+              </span>
+            ) : (
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 group-hover:bg-primary/15 transition-colors lg:h-12 lg:w-12">
+                <Camera className="h-5 w-5 text-primary" />
+              </span>
+            )}
+            <div className="min-w-0">
+              <span className="font-[family-name:var(--font-playfair)] text-lg font-bold block truncate lg:text-xl">
+                {brandName}
+              </span>
             </div>
           </Link>
 

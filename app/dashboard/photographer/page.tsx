@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { FolderOpen, Image, MessageSquare, Calendar, TrendingUp, ArrowUpRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase';
+import { UpdateSystemButton } from '../admin/update-system-button';
 
 export default function PhotographerDashboard() {
   const [stats, setStats] = useState({
@@ -49,9 +50,12 @@ export default function PhotographerDashboard() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-bold">Photographer Dashboard</h2>
-        <p className="text-muted-foreground">Welcome back! Here is your overview.</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Photographer Dashboard</h2>
+          <p className="text-muted-foreground">Welcome back! Here is your overview.</p>
+        </div>
+        <UpdateSystemButton />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

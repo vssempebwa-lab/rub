@@ -45,12 +45,27 @@ export type SectionHeading = {
   subtitle: string;
 };
 
+export type HeroImageFit = 'cover' | 'contain';
+
+export type HeroImagePosition =
+  | 'center'
+  | 'top'
+  | 'bottom'
+  | 'left'
+  | 'right'
+  | 'left top'
+  | 'right top'
+  | 'left bottom'
+  | 'right bottom';
+
 export type HomeContent = {
   hero: {
     badge: string;
     title: string;
     subtitle: string;
     imageUrl: string;
+    imageFit: HeroImageFit;
+    imagePosition: HeroImagePosition;
   };
   stats: StatItem[];
   servicesSection: SectionHeading;

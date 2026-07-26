@@ -3,6 +3,7 @@ import {
   Image as ImageIcon,
   FolderOpen,
   MessageSquare,
+  RefreshCw,
   UserCircle,
   type LucideIcon,
 } from 'lucide-react';
@@ -25,10 +26,15 @@ export function getDashboardPageTitle(pathname: string): string {
 }
 
 export const roleLabels: Record<UserRole, string> = {
+  admin: 'Admin workspace',
   photographer: 'Photographer workspace',
 };
 
 export const dashboardNavigation: Record<UserRole, NavItem[]> = {
+  admin: [
+    { label: 'Dashboard', href: '/dashboard/admin', icon: LayoutDashboard },
+    { label: 'Update System', href: '/dashboard/admin/system', icon: RefreshCw },
+  ],
   photographer: [
     { label: 'Dashboard', href: '/dashboard/photographer', icon: LayoutDashboard },
     { label: 'Events', href: '/dashboard/photographer/events', icon: FolderOpen },

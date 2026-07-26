@@ -1,11 +1,31 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Camera, CalendarDays } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EventPricingTabs } from './event-pricing-tabs';
 import { PhotoshootPricingGrid } from './photoshoot-pricing-grid';
+import { fetchPublicPricing } from '@/features/website/api/pricing';
+import {
+  eventPricing as fallbackEventPricing,
+  photoshootPricing as fallbackPhotoshootPricing,
+  type EventPricingContext,
+  type PhotoshootPricingItem,
+} from '@/lib/pricing-data';
 
 export function PricingSection() {
+  const [eventPricing, setEventPricing] = useState<EventPricingContext[]>([...fallbackEventPricing]);
+  const [photoshootPricing, setPhotoshootPricing] = useState<PhotoshootPricingItem[]>([
+    ...fallbackPhotoshootPricing,
+  ]);
+
+  useEffect(() => {
+    fetchPublicPricing().then((pricing) => {
+      setEventPricing(pricing.eventPricing);
+      setPhotoshootPricing(pricing.photoshootPricing);
+    });
+  }, []);
+
   return (
     <section className="bg-background py-16 sm:py-20 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -43,7 +63,7 @@ export function PricingSection() {
           </div>
 
           <TabsContent value="events" className="mt-10">
-            <EventPricingTabs />
+            <EventPricingTabs eventPricing={eventPricing} />
           </TabsContent>
 
           <TabsContent value="photoshoots" className="mt-10">
@@ -56,7 +76,7 @@ export function PricingSection() {
                 to confirm in the data file.
               </p>
             </div>
-            <PhotoshootPricingGrid />
+            <PhotoshootPricingGrid photoshootPricing={photoshootPricing} />
           </TabsContent>
         </Tabs>
       </div>

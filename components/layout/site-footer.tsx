@@ -11,7 +11,12 @@ export function SiteFooter() {
 
   const primaryPhone = business.phones[0] ?? '';
   const primaryEmail = business.emails[0] ?? '';
-  const location = [business.city, business.country].filter(Boolean).join(', ');
+  const location = [
+    business.addressLine1,
+    business.addressLine2,
+    business.city,
+    business.country,
+  ].filter(Boolean).join(', ');
 
   return (
     <footer className="marketing-footer border-t bg-muted/30">

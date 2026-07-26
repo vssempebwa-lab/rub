@@ -10,6 +10,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useRequirePhotographer } from '@/features/auth/hooks/use-require-photographer';
 import { defaultSiteContent } from '@/features/website/defaults';
 import {
@@ -22,6 +29,23 @@ import type { SiteContentMap, SiteFaq, TeamMember } from '@/features/website/typ
 import { PricingPackagesEditor } from '@/features/website/components/pricing-packages-editor';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
+
+const heroImageFitOptions = [
+  { value: 'cover', label: 'Fill frame (crop edges)' },
+  { value: 'contain', label: 'Show full image' },
+] as const;
+
+const heroImagePositionOptions = [
+  { value: 'center', label: 'Center' },
+  { value: 'top', label: 'Top' },
+  { value: 'bottom', label: 'Bottom' },
+  { value: 'left', label: 'Left' },
+  { value: 'right', label: 'Right' },
+  { value: 'left top', label: 'Top left' },
+  { value: 'right top', label: 'Top right' },
+  { value: 'left bottom', label: 'Bottom left' },
+  { value: 'right bottom', label: 'Bottom right' },
+] as const;
 
 function FieldGroup({
   label,
@@ -257,7 +281,7 @@ export function WebsiteManager() {
               </FieldGroup>
               <div className="grid sm:grid-cols-2 gap-6">
                 <FieldGroup label="Phone numbers">
-                  <StringListEditor values={business.phones} onChange={(phones) => setContent({ ...content, business: { ...business, phones } })} placeholder="+256..." />
+                  <StringListEditor values={business.phones} onChange={(phones) => setContent({ ...content, business: { ...business, phones } })} placeholder="0705 500291" />
                 </FieldGroup>
                 <FieldGroup label="Email addresses">
                   <StringListEditor values={business.emails} onChange={(emails) => setContent({ ...content, business: { ...business, emails } })} placeholder="hello@..." />
@@ -303,6 +327,28 @@ export function WebsiteManager() {
               <FieldGroup label="Hero title"><Input value={content.home.hero.title} onChange={(e) => setContent({ ...content, home: { ...content.home, hero: { ...content.home.hero, title: e.target.value } } })} /></FieldGroup>
               <FieldGroup label="Hero subtitle"><Textarea rows={2} value={content.home.hero.subtitle} onChange={(e) => setContent({ ...content, home: { ...content.home, hero: { ...content.home.hero, subtitle: e.target.value } } })} /></FieldGroup>
               <FieldGroup label="Hero image URL"><Input value={content.home.hero.imageUrl} onChange={(e) => setContent({ ...content, home: { ...content.home, hero: { ...content.home.hero, imageUrl: e.target.value } } })} /></FieldGroup>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <FieldGroup label="Hero image fit">
+                  <Select value={content.home.hero.imageFit} onValueChange={(imageFit) => setContent({ ...content, home: { ...content.home, hero: { ...content.home.hero, imageFit: imageFit as typeof content.home.hero.imageFit } } })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {heroImageFitOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FieldGroup>
+                <FieldGroup label="Hero image position">
+                  <Select value={content.home.hero.imagePosition} onValueChange={(imagePosition) => setContent({ ...content, home: { ...content.home, hero: { ...content.home.hero, imagePosition: imagePosition as typeof content.home.hero.imagePosition } } })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {heroImagePositionOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FieldGroup>
+              </div>
 
               <div className="space-y-4">
                 <h3 className="font-semibold">Stats</h3>

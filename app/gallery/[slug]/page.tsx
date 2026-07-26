@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/lib/supabase';
 import { MarketingPage } from '@/components/layout/marketing-page';
 import { toast } from '@/hooks/use-toast';
+import { defaultSiteSettings, fetchSiteSettings } from '@/features/website/site-settings';
 
 type AccessStep = 'register' | 'otp' | 'password' | 'gallery';
 
@@ -22,6 +23,7 @@ interface Photo {
   id: string;
   url: string;
   thumbnail_url: string | null;
+  watermarked_url: string | null;
   filename: string | null;
 }
 
@@ -66,10 +68,28 @@ export default function GalleryPage() {
   const [commentForm, setCommentForm] = useState({ author_name: '', content: '' });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [settings, setSettings] = useState(defaultSiteSettings);
 
   useEffect(() => {
-    if (slug) loadGallery();
+    if (slug) {
+      loadGallery();
+      fetchSiteSettings().then(setSettings);
+    }
   }, [slug]);
+
+  function getPreviewUrl(photo: Photo) {
+    if (settings.featureToggles.watermarkedPreviews && photo.watermarked_url) {
+      return photo.watermarked_url;
+    }
+    return photo.thumbnail_url || photo.url;
+  }
+
+  function getDisplayUrl(photo: Photo) {
+    if (settings.featureToggles.watermarkedPreviews && photo.watermarked_url) {
+      return photo.watermarked_url;
+    }
+    return photo.url;
+  }
 
   async function loadGallery() {
     setLoading(true);
@@ -329,7 +349,7 @@ export default function GalleryPage() {
                   className="relative aspect-square rounded-lg overflow-hidden group bg-muted"
                 >
                   <img
-                    src={photo.thumbnail_url || photo.url}
+                    src={getPreviewUrl(photo)}
                     alt={photo.filename || ''}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
@@ -386,7 +406,7 @@ export default function GalleryPage() {
               <ChevronLeft className="h-6 w-6" />
             </button>
             <img
-              src={visiblePhotos[selectedPhoto].url}
+              src={getDisplayUrl(visiblePhotos[selectedPhoto])}
               alt=""
               className="max-h-full max-w-full object-contain"
             />

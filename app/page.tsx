@@ -15,6 +15,7 @@ import { BookSessionDialog } from '@/components/layout/book-session-dialog';
 import { supabase } from '@/lib/supabase';
 import { useWebsiteContent } from '@/features/website/hooks/use-website-content';
 import { getIcon } from '@/features/website/utils/icon-map';
+import { defaultSiteSettings, fetchSiteSettings } from '@/features/website/site-settings';
 
 interface Category {
   id: string;
@@ -45,12 +46,14 @@ interface Event {
 export default function HomePage() {
   const { content } = useWebsiteContent();
   const { home } = content;
+  const [settings, setSettings] = useState(defaultSiteSettings);
   const [categories, setCategories] = useState<Category[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [featuredEvents, setFeaturedEvents] = useState<Event[]>([]);
 
   useEffect(() => {
     loadData();
+    fetchSiteSettings().then(setSettings);
   }, []);
 
   async function loadData() {
@@ -64,8 +67,20 @@ export default function HomePage() {
     if (eventData) setFeaturedEvents(eventData);
   }
 
+  function getCategoryImageStyle(categoryId: string): React.CSSProperties {
+    const imageSettings = settings.serviceCategoryImages[categoryId] ?? {
+      imageFit: 'cover',
+      imagePosition: 'center',
+    };
+
+    return {
+      objectFit: imageSettings.imageFit,
+      objectPosition: imageSettings.imagePosition,
+    };
+  }
+
   return (
-    <MarketingPage headerFixed extraActions={<BookSessionDialog />}>
+    <MarketingPage headerFixed extraActions={settings.featureToggles.bookingInquiryForm ? <BookSessionDialog /> : undefined}>
 
       {/* Hero */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
@@ -74,7 +89,11 @@ export default function HomePage() {
             src={home.hero.imageUrl}
             alt="Photography"
             fill
-            className="object-cover"
+            className="object-center"
+            style={{
+              objectFit: home.hero.imageFit,
+              objectPosition: home.hero.imagePosition,
+            }}
             priority
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
@@ -96,13 +115,15 @@ export default function HomePage() {
                 View portfolio <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <BookSessionDialog
-              trigger={
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 font-semibold px-8">
-                  Book a session
-                </Button>
-              }
-            />
+            {settings.featureToggles.bookingInquiryForm && (
+              <BookSessionDialog
+                trigger={
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 font-semibold px-8">
+                    Book a session
+                  </Button>
+                }
+              />
+            )}
           </div>
         </div>
       </section>
@@ -138,7 +159,8 @@ export default function HomePage() {
                   src={cat.image_url || `https://images.pexels.com/photos/2253870/pexels-photo-2253870.jpeg?auto=compress&cs=tinysrgb&w=600`}
                   alt={cat.name}
                   fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="transition-transform duration-500 group-hover:scale-110"
+                  style={getCategoryImageStyle(cat.id)}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -157,6 +179,7 @@ export default function HomePage() {
       </section>
 
       {/* Featured Work */}
+      {settings.featureToggles.publicPortfolioHighlights && (
       <section className="py-20 bg-muted/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between mb-12">
@@ -213,8 +236,10 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Testimonials */}
+      {settings.featureToggles.homepageTestimonials && (
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -244,6 +269,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* CTA */}
       <section className="py-20 bg-primary text-primary-foreground">
@@ -253,13 +279,15 @@ export default function HomePage() {
             {home.cta.subtitle}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <BookSessionDialog
-              trigger={
-                <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold px-8">
-                  Book now <Calendar className="ml-2 h-4 w-4" />
-                </Button>
-              }
-            />
+            {settings.featureToggles.bookingInquiryForm && (
+              <BookSessionDialog
+                trigger={
+                  <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold px-8">
+                    Book now <Calendar className="ml-2 h-4 w-4" />
+                  </Button>
+                }
+              />
+            )}
             <Link href="/contact">
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 font-semibold px-8">
                 Contact Us

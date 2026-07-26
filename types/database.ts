@@ -384,34 +384,68 @@ export type Database = {
       pricing_packages: {
         Row: {
           id: string;
+          category: string;
           name: string;
           tier: string;
           price: number | null;
           description: string | null;
+          duration: string | null;
+          number_of_photographers: string | null;
           features: string[] | null;
+          notes: string | null;
+          cta_label: string | null;
           is_popular: boolean;
           sort_order: number;
           created_at: string;
         };
         Insert: {
           id?: string;
+          category?: string;
           name: string;
           tier: string;
           price?: number | null;
           description?: string | null;
+          duration?: string | null;
+          number_of_photographers?: string | null;
           features?: string[] | null;
+          notes?: string | null;
+          cta_label?: string | null;
           is_popular?: boolean;
           sort_order?: number;
           created_at?: string;
         };
         Update: {
+          category?: string;
           name?: string;
           tier?: string;
           price?: number | null;
           description?: string | null;
+          duration?: string | null;
+          number_of_photographers?: string | null;
           features?: string[] | null;
+          notes?: string | null;
+          cta_label?: string | null;
           is_popular?: boolean;
           sort_order?: number;
+        };
+      };
+      site_settings: {
+        Row: {
+          key: string;
+          value: Record<string, unknown>;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          key: string;
+          value?: Record<string, unknown>;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          value?: Record<string, unknown>;
+          updated_at?: string;
+          updated_by?: string | null;
         };
       };
       site_content: {

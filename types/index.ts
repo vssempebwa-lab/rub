@@ -2,7 +2,7 @@ import type { Database } from './database';
 
 export type { Database } from './database';
 
-export type UserRole = 'photographer';
+export type UserRole = 'admin' | 'photographer';
 
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 

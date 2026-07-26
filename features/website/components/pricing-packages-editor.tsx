@@ -24,14 +24,24 @@ type PackageDraft = Omit<PricingPackage, 'created_at'> & { created_at?: string }
 
 const TIERS = ['silver', 'gold', 'premium', 'custom'] as const;
 
+function isMissingPricingColumn(error: { message?: string; code?: string } | null | undefined) {
+  const message = error?.message?.toLowerCase() ?? '';
+  return error?.code === '42703' || message.includes('column') || message.includes('schema cache');
+}
+
 function emptyPackage(sortOrder: number): PackageDraft {
   return {
     id: '',
+    category: 'Photoshoots',
     name: '',
     tier: 'silver',
     price: null,
     description: '',
+    duration: '',
+    number_of_photographers: '',
     features: [],
+    notes: '',
+    cta_label: '',
     is_popular: false,
     sort_order: sortOrder,
   };
@@ -157,15 +167,31 @@ export function PricingPackagesEditor() {
       toast({ title: 'Name required', description: 'Enter a package name.', variant: 'destructive' });
       return;
     }
+    if (!pkg.category.trim()) {
+      toast({ title: 'Category required', description: 'Enter Events, Wedding, Photoshoots, or another display group.', variant: 'destructive' });
+      return;
+    }
+    if (pkg.price !== null && pkg.price <= 0) {
+      toast({ title: 'Invalid price', description: 'Price must be a positive number, or blank for a custom quote.', variant: 'destructive' });
+      return;
+    }
+    if (!window.confirm('Save pricing changes? These changes affect prices customers see on the public website.')) {
+      return;
+    }
 
     setSavingId(pkg.id || `new-${index}`);
 
     const payload = {
+      category: pkg.category.trim(),
       name: pkg.name.trim(),
       tier: pkg.tier,
       price: pkg.price,
       description: pkg.description?.trim() || null,
+      duration: pkg.duration?.trim() || null,
+      number_of_photographers: pkg.number_of_photographers?.trim() || null,
       features: (pkg.features ?? []).map((f) => f.trim()).filter(Boolean),
+      notes: pkg.notes?.trim() || null,
+      cta_label: pkg.cta_label?.trim() || null,
       is_popular: pkg.is_popular,
       sort_order: pkg.sort_order,
     };
@@ -174,20 +200,29 @@ export function PricingPackagesEditor() {
       await supabase.from('pricing_packages').update({ is_popular: false });
     }
 
-    if (pkg.id) {
-      const { error } = await supabase.from('pricing_packages').update(payload).eq('id', pkg.id);
-      if (error) {
-        toast({ title: 'Error', description: error.message, variant: 'destructive' });
-        setSavingId(null);
-        return;
-      }
-    } else {
-      const { error } = await supabase.from('pricing_packages').insert([payload]);
-      if (error) {
-        toast({ title: 'Error', description: error.message, variant: 'destructive' });
-        setSavingId(null);
-        return;
-      }
+    let result = pkg.id
+      ? await supabase.from('pricing_packages').update(payload).eq('id', pkg.id)
+      : await supabase.from('pricing_packages').insert([payload]);
+
+    if (isMissingPricingColumn(result.error)) {
+      const legacyPayload = {
+        name: payload.name,
+        tier: payload.tier,
+        price: payload.price,
+        description: payload.description,
+        features: payload.features,
+        is_popular: payload.is_popular,
+        sort_order: payload.sort_order,
+      };
+      result = pkg.id
+        ? await supabase.from('pricing_packages').update(legacyPayload).eq('id', pkg.id)
+        : await supabase.from('pricing_packages').insert([legacyPayload]);
+    }
+
+    if (result.error) {
+      toast({ title: 'Error', description: result.error.message, variant: 'destructive' });
+      setSavingId(null);
+      return;
     }
 
     setSavingId(null);
@@ -288,6 +323,14 @@ export function PricingPackagesEditor() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
+                  <Label>Display category</Label>
+                  <Input
+                    value={pkg.category}
+                    placeholder="Wedding, Introduction Ceremony, Photoshoots"
+                    onChange={(e) => updatePackage(index, { category: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label>Package name</Label>
                   <Input
                     value={pkg.name}
@@ -335,6 +378,22 @@ export function PricingPackagesEditor() {
                     }
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label>Duration</Label>
+                  <Input
+                    value={pkg.duration ?? ''}
+                    placeholder="Full coverage - 12 hrs"
+                    onChange={(e) => updatePackage(index, { duration: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Team size</Label>
+                  <Input
+                    value={pkg.number_of_photographers ?? ''}
+                    placeholder="2 photographers, 2 videographers"
+                    onChange={(e) => updatePackage(index, { number_of_photographers: e.target.value })}
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -353,6 +412,26 @@ export function PricingPackagesEditor() {
                   values={pkg.features ?? []}
                   onChange={(features) => updatePackage(index, { features })}
                 />
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Notes</Label>
+                  <Textarea
+                    rows={2}
+                    value={pkg.notes ?? ''}
+                    placeholder="Optional fine print shown on the card"
+                    onChange={(e) => updatePackage(index, { notes: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>CTA label</Label>
+                  <Input
+                    value={pkg.cta_label ?? ''}
+                    placeholder="Book Now"
+                    onChange={(e) => updatePackage(index, { cta_label: e.target.value })}
+                  />
+                </div>
               </div>
 
               <div className="flex gap-2 pt-2">

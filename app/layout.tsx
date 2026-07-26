@@ -1,15 +1,23 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter, Playfair_Display } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
+import { SiteThemeProvider } from '@/features/website/components/site-theme-provider';
+import { fetchSiteSettings } from '@/features/website/site-settings';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' });
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await fetchSiteSettings();
+  const images = settings.seo.openGraphImage ? [settings.seo.openGraphImage] : undefined;
 
-export const metadata: Metadata = {
-  title: 'Rub Shoots Photography | Professional Photography Services',
-  description: 'Wedding, portrait, graduation, corporate, and event photography. Book your session today.',
-};
+  return {
+    title: settings.seo.siteTitle,
+    description: settings.seo.metaDescription,
+    openGraph: {
+      title: settings.seo.siteTitle,
+      description: settings.seo.metaDescription,
+      images,
+    },
+  };
+}
 
 export default function RootLayout({
   children,
@@ -18,8 +26,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${playfair.variable} font-sans`} suppressHydrationWarning>
-        {children}
+      <body className="font-sans" suppressHydrationWarning>
+        <SiteThemeProvider>{children}</SiteThemeProvider>
         <Toaster />
       </body>
     </html>

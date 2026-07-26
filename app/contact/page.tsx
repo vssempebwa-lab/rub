@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,16 +10,22 @@ import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
 import { useWebsiteContent } from '@/features/website/hooks/use-website-content';
 import { SocialLinksBar } from '@/features/website/components/social-links';
+import { defaultSiteSettings, fetchSiteSettings } from '@/features/website/site-settings';
 
 export default function ContactPage() {
   const { content, business } = useWebsiteContent();
   const { contact } = content;
+  const [settings, setSettings] = useState(defaultSiteSettings);
   const [form, setForm] = useState({
     client_name: '',
     client_email: '',
     client_phone: '',
     message: '',
   });
+
+  useEffect(() => {
+    fetchSiteSettings().then(setSettings);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -106,6 +112,7 @@ export default function ContactPage() {
               </div>
             </div>
 
+            {settings.featureToggles.bookingInquiryForm && (
             <div className="bg-card border rounded-xl p-8">
               <h2 className="font-[family-name:var(--font-playfair)] text-2xl font-bold mb-6">Send a Message</h2>
               <form onSubmit={handleSubmit} className="space-y-5">
@@ -121,7 +128,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-1.5 block">Phone</label>
-                  <Input placeholder="+256..." value={form.client_phone} onChange={e => setForm({ ...form, client_phone: e.target.value })} />
+                  <Input placeholder="0705 500291" value={form.client_phone} onChange={e => setForm({ ...form, client_phone: e.target.value })} />
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-1.5 block">Message</label>
@@ -132,6 +139,7 @@ export default function ContactPage() {
                 </Button>
               </form>
             </div>
+            )}
           </div>
         </div>
       </section>

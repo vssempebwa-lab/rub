@@ -1,10 +1,12 @@
 'use client';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { eventPricing } from '@/lib/pricing-data';
+import type { EventPricingContext } from '@/lib/pricing-data';
 import { PricingCard } from './pricing-card';
 
-export function EventPricingTabs() {
+export function EventPricingTabs({ eventPricing }: { eventPricing: EventPricingContext[] }) {
+  if (eventPricing.length === 0) return null;
+
   return (
     <Tabs defaultValue={eventPricing[0].id} className="w-full">
       <div className="flex justify-center">

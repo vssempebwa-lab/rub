@@ -67,7 +67,7 @@ export function BookSessionDialog({ trigger }: BookSessionDialogProps) {
             <Input type="email" placeholder="Email" value={form.client_email} onChange={(e) => setForm({ ...form, client_email: e.target.value })} required />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input placeholder="Phone" value={form.client_phone} onChange={(e) => setForm({ ...form, client_phone: e.target.value })} />
+            <Input placeholder="0705 500291" value={form.client_phone} onChange={(e) => setForm({ ...form, client_phone: e.target.value })} />
             <Input type="date" value={form.event_date} onChange={(e) => setForm({ ...form, event_date: e.target.value })} />
           </div>
           <Input placeholder="Event type (Wedding, Portrait, etc.)" value={form.event_type} onChange={(e) => setForm({ ...form, event_type: e.target.value })} />

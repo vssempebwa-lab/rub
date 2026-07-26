@@ -69,13 +69,13 @@ INSERT INTO site_content (key, value) VALUES
 ('business', '{
   "businessName": "Rub Shoots",
   "tagline": "Photography Studio",
-  "phones": ["+256 700 123 456", "+256 772 987 654"],
+  "phones": ["0705 500291"],
   "emails": ["hello@rubshoots.com", "bookings@rubshoots.com"],
-  "addressLine1": "Plot 42, Acacia Avenue",
-  "addressLine2": "Kololo",
+  "addressLine1": "Adonai Plaza Opp Be Energy Petrol Station",
+  "addressLine2": "Kampala - Entebbe Rd",
   "city": "Kampala",
   "country": "Uganda",
-  "mapAddress": "Plot 42, Acacia Avenue, Kololo, Kampala, Uganda",
+  "mapAddress": "Adonai Plaza Opp Be Energy Petrol Station, Kampala - Entebbe Rd, Kampala, Uganda",
   "hoursWeekday": "Monday - Saturday: 9:00 AM - 6:00 PM",
   "hoursWeekend": "Sunday: By appointment",
   "footerHours": "Mon–Sat, 9AM–6PM",
@@ -94,7 +94,9 @@ INSERT INTO site_content (key, value) VALUES
     "badge": "Professional Photography",
     "title": "Capturing Life''s Beautiful Moments",
     "subtitle": "Wedding, portrait, graduation, and event photography that tells your unique story with artistry and passion.",
-    "imageUrl": "https://images.pexels.com/photos/2253870/pexels-photo-2253870.jpeg?auto=compress&cs=tinysrgb&w=1920"
+    "imageUrl": "https://images.pexels.com/photos/2253870/pexels-photo-2253870.jpeg?auto=compress&cs=tinysrgb&w=1920",
+    "imageFit": "cover",
+    "imagePosition": "center"
   },
   "stats": [
     { "icon": "Camera", "value": "500+", "label": "Events Covered" },
