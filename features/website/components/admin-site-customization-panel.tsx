@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-import { Camera, ImageIcon, Loader2, Plus, Save, Trash2, Upload } from 'lucide-react';
+import { ArrowDown, ArrowUp, Camera, ImageIcon, Loader2, Plus, Save, Trash2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -34,7 +34,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
 import type { SiteContentMap } from '@/features/website/types';
-import type { Category, Service, Testimonial } from '@/types';
+import type { Category, Service, TeamMember, Testimonial } from '@/types';
 
 type AdminSiteCustomizationPanelProps = {
   userId: string;
@@ -133,10 +133,18 @@ async function uploadWebsiteAsset(file: File, folder: string): Promise<string> {
   return data.publicUrl;
 }
 
+function isMissingTeamMemberCmsColumn(error: { code?: string; message?: string } | null) {
+  return (
+    error?.code === 'PGRST204' &&
+    /'(?:photo_url|social_links)' column of 'team_members'/i.test(error.message ?? '')
+  );
+}
+
 export function AdminSiteCustomizationPanel({ userId }: AdminSiteCustomizationPanelProps) {
   const [settings, setSettings] = useState<SiteCustomizationSettings>(defaultSiteSettings);
   const [content, setContent] = useState<SiteContentMap>(defaultSiteContent);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
@@ -152,16 +160,18 @@ export function AdminSiteCustomizationPanel({ userId }: AdminSiteCustomizationPa
 
   async function loadAll() {
     setLoading(true);
-    const [siteSettings, siteContent, { data: testimonialData }, { data: categoryData }, { data: serviceData }] = await Promise.all([
+    const [siteSettings, siteContent, { data: testimonialData }, { data: teamData }, { data: categoryData }, { data: serviceData }] = await Promise.all([
       fetchSiteSettings(),
       fetchAllSiteContent(),
       supabase.from('testimonials').select('*').order('created_at', { ascending: false }),
+      supabase.from('team_members').select('*').order('sort_order'),
       supabase.from('categories').select('*').order('sort_order'),
       supabase.from('services').select('*').order('sort_order'),
     ]);
     setSettings(siteSettings);
     setContent(siteContent);
     setTestimonials((testimonialData as Testimonial[]) ?? []);
+    setTeamMembers((teamData as TeamMember[]) ?? []);
     setCategories((categoryData as Category[]) ?? []);
     setServices((serviceData as Service[]) ?? []);
     setLoading(false);
@@ -223,6 +233,100 @@ export function AdminSiteCustomizationPanel({ userId }: AdminSiteCustomizationPa
       return;
     }
     toast({ title: 'Testimonial removed' });
+    loadAll();
+  }
+
+  async function saveTeamMember(member: Partial<TeamMember>, index: number) {
+    if (!member.name?.trim() || !member.role?.trim()) {
+      toast({ title: 'Missing team fields', description: 'Name and role are required.', variant: 'destructive' });
+      return;
+    }
+
+    setSaving(`team-${index}`);
+    const photoUrl = member.photo_url || member.image_url || null;
+    const payload = {
+      name: member.name.trim(),
+      role: member.role.trim(),
+      bio: member.bio?.trim() || null,
+      photo_url: photoUrl,
+      image_url: photoUrl,
+      social_links: {
+        instagram: member.social_links?.instagram?.trim() || '',
+        tiktok: member.social_links?.tiktok?.trim() || '',
+      },
+      sort_order: Number(member.sort_order) || 0,
+      is_active: member.is_active ?? true,
+    };
+
+    let result = member.id
+      ? await supabase.from('team_members').update(payload).eq('id', member.id)
+      : await supabase.from('team_members').insert([payload]);
+
+    if (isMissingTeamMemberCmsColumn(result.error)) {
+      const legacyPayload = {
+        name: payload.name,
+        role: payload.role,
+        bio: payload.bio,
+        image_url: payload.image_url,
+        sort_order: payload.sort_order,
+        is_active: payload.is_active,
+      };
+
+      result = member.id
+        ? await supabase.from('team_members').update(legacyPayload).eq('id', member.id)
+        : await supabase.from('team_members').insert([legacyPayload]);
+    }
+
+    setSaving(null);
+
+    if (result.error) {
+      toast({ title: 'Save failed', description: result.error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Team member saved' });
+    loadAll();
+  }
+
+  async function deleteTeamMember(id: string) {
+    const { error } = await supabase.from('team_members').delete().eq('id', id);
+    if (error) {
+      toast({ title: 'Delete failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Team member removed' });
+    loadAll();
+  }
+
+  async function moveTeamMember(index: number, direction: -1 | 1) {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= teamMembers.length) return;
+
+    const next = [...teamMembers];
+    const current = { ...next[index], sort_order: next[targetIndex].sort_order };
+    const target = { ...next[targetIndex], sort_order: next[index].sort_order };
+    next[index] = target;
+    next[targetIndex] = current;
+    setTeamMembers(next);
+
+    const updates = [current, target].filter((member) => member.id);
+    setSaving('team-order');
+    const results = await Promise.all(
+      updates.map((member) =>
+        supabase
+          .from('team_members')
+          .update({ sort_order: member.sort_order })
+          .eq('id', member.id),
+      ),
+    );
+    const error = results.find((result) => result.error)?.error;
+    setSaving(null);
+
+    if (error) {
+      toast({ title: 'Reorder failed', description: error.message, variant: 'destructive' });
+      loadAll();
+      return;
+    }
+    toast({ title: 'Team order updated' });
     loadAll();
   }
 
@@ -401,6 +505,7 @@ export function AdminSiteCustomizationPanel({ userId }: AdminSiteCustomizationPa
           <TabsTrigger value="pricing">Pricing</TabsTrigger>
           <TabsTrigger value="branding">Branding</TabsTrigger>
           <TabsTrigger value="homepage">Homepage</TabsTrigger>
+          <TabsTrigger value="team">Team</TabsTrigger>
           <TabsTrigger value="services">Services</TabsTrigger>
           <TabsTrigger value="business">Business Info</TabsTrigger>
           <TabsTrigger value="seo">SEO</TabsTrigger>
@@ -685,6 +790,185 @@ export function AdminSiteCustomizationPanel({ userId }: AdminSiteCustomizationPa
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="team">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Team Members</CardTitle>
+                <CardDescription>Add, edit, reorder, and hide public team profiles.</CardDescription>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => setTeamMembers([
+                  {
+                    id: '',
+                    name: '',
+                    role: '',
+                    bio: '',
+                    image_url: '',
+                    photo_url: '',
+                    social_links: { instagram: '', tiktok: '' },
+                    sort_order: teamMembers.length + 1,
+                    is_active: true,
+                    created_at: '',
+                  },
+                  ...teamMembers,
+                ])}
+              >
+                <Plus className="h-4 w-4 mr-2" /> Add
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {teamMembers.map((member, index) => (
+                <div key={member.id || `team-${index}`} className="rounded-lg border p-4 space-y-4">
+                  <div className="grid gap-4 lg:grid-cols-[160px_1fr]">
+                    <div className="space-y-3">
+                      <div className="relative aspect-[4/5] overflow-hidden rounded-md border bg-muted">
+                        {member.photo_url || member.image_url ? (
+                          <Image
+                            src={member.photo_url || member.image_url || ''}
+                            alt={`${member.name || 'Team member'} preview`}
+                            fill
+                            className="object-cover"
+                            sizes="160px"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-muted-foreground">
+                            <Camera className="h-8 w-8" />
+                          </div>
+                        )}
+                      </div>
+                      <Button variant="outline" size="sm" className="w-full" asChild>
+                        <label>
+                          <Upload className="h-4 w-4 mr-2" /> Upload photo
+                          <Input
+                            className="hidden"
+                            type="file"
+                            accept="image/*"
+                            onChange={async (event) => {
+                              const file = event.target.files?.[0];
+                              if (!file) return;
+                              setSaving(`team-photo-${index}`);
+                              try {
+                                const url = await uploadWebsiteAsset(file, 'team');
+                                const next = [...teamMembers];
+                                next[index] = { ...member, photo_url: url, image_url: url };
+                                setTeamMembers(next);
+                                toast({ title: 'Photo uploaded', description: 'Save the team member to make this photo live.' });
+                              } catch (error) {
+                                toast({
+                                  title: 'Upload failed',
+                                  description: error instanceof Error ? error.message : 'Unable to upload photo.',
+                                  variant: 'destructive',
+                                });
+                              } finally {
+                                setSaving(null);
+                              }
+                            }}
+                          />
+                        </label>
+                      </Button>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <FieldGroup label="Name">
+                          <Input value={member.name} onChange={(event) => {
+                            const next = [...teamMembers];
+                            next[index] = { ...member, name: event.target.value };
+                            setTeamMembers(next);
+                          }} />
+                        </FieldGroup>
+                        <FieldGroup label="Role">
+                          <Input value={member.role} onChange={(event) => {
+                            const next = [...teamMembers];
+                            next[index] = { ...member, role: event.target.value };
+                            setTeamMembers(next);
+                          }} />
+                        </FieldGroup>
+                      </div>
+                      <FieldGroup label="Short bio">
+                        <Textarea rows={3} value={member.bio ?? ''} onChange={(event) => {
+                          const next = [...teamMembers];
+                          next[index] = { ...member, bio: event.target.value };
+                          setTeamMembers(next);
+                        }} />
+                      </FieldGroup>
+                      <FieldGroup label="Photo URL">
+                        <Input value={member.photo_url || member.image_url || ''} onChange={(event) => {
+                          const next = [...teamMembers];
+                          next[index] = { ...member, photo_url: event.target.value, image_url: event.target.value };
+                          setTeamMembers(next);
+                        }} />
+                      </FieldGroup>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <FieldGroup label="Instagram">
+                          <Input value={member.social_links?.instagram ?? ''} onChange={(event) => {
+                            const next = [...teamMembers];
+                            next[index] = {
+                              ...member,
+                              social_links: { ...member.social_links, instagram: event.target.value },
+                            };
+                            setTeamMembers(next);
+                          }} />
+                        </FieldGroup>
+                        <FieldGroup label="TikTok">
+                          <Input value={member.social_links?.tiktok ?? ''} onChange={(event) => {
+                            const next = [...teamMembers];
+                            next[index] = {
+                              ...member,
+                              social_links: { ...member.social_links, tiktok: event.target.value },
+                            };
+                            setTeamMembers(next);
+                          }} />
+                        </FieldGroup>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <FieldGroup label="Display order">
+                          <Input className="w-28" type="number" value={member.sort_order} onChange={(event) => {
+                            const next = [...teamMembers];
+                            next[index] = { ...member, sort_order: Number(event.target.value) || 0 };
+                            setTeamMembers(next);
+                          }} />
+                        </FieldGroup>
+                        <div className="flex items-center gap-2 pt-7">
+                          <Switch checked={member.is_active} onCheckedChange={(checked) => {
+                            const next = [...teamMembers];
+                            next[index] = { ...member, is_active: checked };
+                            setTeamMembers(next);
+                          }} />
+                          <span className="text-sm">Active</span>
+                        </div>
+                        <div className="ml-auto flex gap-2 pt-7">
+                          <Button type="button" size="icon" variant="outline" onClick={() => moveTeamMember(index, -1)} disabled={index === 0 || saving === 'team-order'}>
+                            <ArrowUp className="h-4 w-4" />
+                          </Button>
+                          <Button type="button" size="icon" variant="outline" onClick={() => moveTeamMember(index, 1)} disabled={index === teamMembers.length - 1 || saving === 'team-order'}>
+                            <ArrowDown className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" onClick={() => saveTeamMember(member, index)} disabled={saving === `team-${index}`}>
+                            <Save className="h-4 w-4 mr-2" /> Save
+                          </Button>
+                          {member.id && (
+                            <Button size="sm" variant="outline" onClick={() => deleteTeamMember(member.id)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {teamMembers.length === 0 && (
+                <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+                  No team members yet. Add the first profile to publish it on the Team page.
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="services">

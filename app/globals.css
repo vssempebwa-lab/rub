@@ -83,4 +83,56 @@
     --shell-accent: 220 14% 96%;
     background: hsl(var(--shell-accent));
   }
+
+  .team-marquee-static {
+    display: none;
+  }
+
+  .team-marquee-motion {
+    --team-marquee-gap: 2rem;
+    display: block;
+    margin-inline: calc(50% - 50vw);
+    overflow: hidden;
+    padding-block: 0.25rem;
+  }
+
+  .team-marquee-track {
+    animation: team-marquee-left-to-right 42s linear infinite;
+    display: flex;
+    gap: var(--team-marquee-gap);
+    width: max-content;
+    will-change: transform;
+  }
+
+  .team-marquee:hover .team-marquee-track,
+  .team-marquee:focus-within .team-marquee-track {
+    animation-play-state: paused;
+  }
+
+  @media (max-width: 640px) {
+    .team-marquee-track {
+      --team-marquee-gap: 1rem;
+      animation-duration: 56s;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .team-marquee-static {
+      display: grid;
+    }
+
+    .team-marquee-motion {
+      display: none;
+    }
+  }
+
+  @keyframes team-marquee-left-to-right {
+    from {
+      transform: translateX(calc(-50% - (var(--team-marquee-gap) / 2)));
+    }
+
+    to {
+      transform: translateX(0);
+    }
+  }
 }

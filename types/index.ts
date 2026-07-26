@@ -12,3 +12,4 @@ export type Event = Database['public']['Tables']['events']['Row'];
 export type Booking = Database['public']['Tables']['bookings']['Row'];
 export type Testimonial = Database['public']['Tables']['testimonials']['Row'];
 export type PricingPackage = Database['public']['Tables']['pricing_packages']['Row'];
+export type TeamMember = Database['public']['Tables']['team_members']['Row'];

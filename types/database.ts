@@ -470,7 +470,9 @@ export type Database = {
           name: string;
           role: string;
           image_url: string | null;
+          photo_url: string | null;
           bio: string | null;
+          social_links: Record<string, string> | null;
           sort_order: number;
           is_active: boolean;
           created_at: string;
@@ -480,7 +482,9 @@ export type Database = {
           name: string;
           role: string;
           image_url?: string | null;
+          photo_url?: string | null;
           bio?: string | null;
+          social_links?: Record<string, string> | null;
           sort_order?: number;
           is_active?: boolean;
         };
@@ -488,7 +492,9 @@ export type Database = {
           name?: string;
           role?: string;
           image_url?: string | null;
+          photo_url?: string | null;
           bio?: string | null;
+          social_links?: Record<string, string> | null;
           sort_order?: number;
           is_active?: boolean;
         };

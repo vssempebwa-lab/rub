@@ -93,7 +93,7 @@ export default function AboutPage() {
               <div key={member.id} className="text-center">
                 <div className="relative aspect-square rounded-2xl overflow-hidden mb-4 mx-auto max-w-[280px]">
                   <Image
-                    src={member.image_url || 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400'}
+                    src={member.photo_url || member.image_url || 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400'}
                     alt={member.name}
                     fill
                     className="object-cover"

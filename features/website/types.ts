@@ -153,7 +153,12 @@ export type TeamMember = {
   name: string;
   role: string;
   image_url: string | null;
+  photo_url: string | null;
   bio: string | null;
+  social_links: {
+    instagram?: string;
+    tiktok?: string;
+  } | null;
   sort_order: number;
   is_active: boolean;
 };
