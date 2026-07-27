@@ -29,7 +29,7 @@ function DashboardSidebarSkeleton() {
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { profile, loading, signOut, role } = useAuth();
+  const { profile, loading, signOut, role } = useAuth({ redirectTo: '/login' });
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const fallbackRole: UserRole = role === 'admin' ? 'admin' : 'photographer';

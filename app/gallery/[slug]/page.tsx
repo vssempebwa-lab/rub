@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/lib/supabase';
 import { MarketingPage } from '@/components/layout/marketing-page';
 import { toast } from '@/hooks/use-toast';
+import { downloadFromResponse } from '@/lib/download-file';
 import { defaultSiteSettings, fetchSiteSettings } from '@/features/website/site-settings';
 import { resolvePhotoDisplayUrls } from '@/lib/photo-display-url';
 
@@ -225,13 +226,19 @@ export default function GalleryPage() {
     return event?.password ? accessStep === 'password' : !event?.password;
   }
 
-  function downloadPhoto(url: string, photoId: string) {
+  async function downloadPhoto(photoId: string) {
     trackDownload(photoId);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = '';
-    a.target = '_blank';
-    a.click();
+    try {
+      const response = await fetch(`/api/gallery/download?photoId=${encodeURIComponent(photoId)}`);
+      const filename = photos.find((photo) => photo.id === photoId)?.filename || 'rub-shoots-photo.jpg';
+      await downloadFromResponse(response, filename);
+    } catch (error) {
+      toast({
+        title: 'Download failed',
+        description: error instanceof Error ? error.message : 'Please try again.',
+        variant: 'destructive',
+      });
+    }
   }
 
   if (loading) {
@@ -385,7 +392,7 @@ export default function GalleryPage() {
               )}
               {event.allow_downloads && (
                 <button
-                  onClick={() => downloadPhoto(getDisplayUrl(visiblePhotos[selectedPhoto]), visiblePhotos[selectedPhoto].id)}
+                  onClick={() => downloadPhoto(visiblePhotos[selectedPhoto].id)}
                   className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
                 >
                   <Download className="h-5 w-5" />

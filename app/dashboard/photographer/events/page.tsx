@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Image as ImageIcon, Loader2, Plus, Eye, Copy, X } from 'lucide-react';
+import { Image as ImageIcon, Loader2, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -11,9 +11,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
-import { QRCodeSVG } from 'qrcode.react';
 import { EventCard, type EventCardData } from './EventCard';
 import { EventPreviewModal } from './EventPreviewModal';
+import { EventShareDialog } from './EventShareDialog';
 
 interface EventRecord extends EventCardData {
   id: string;
@@ -398,17 +398,30 @@ export default function PhotographerEventsPage() {
 
     setShareLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session?.access_token) {
+        throw new Error('Your session expired. Please log in again and retry sharing.');
+      }
+
       const response = await fetch('/api/gallery-access/share', {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
-          ...(session?.access_token ? { authorization: `Bearer ${session.access_token}` } : {}),
+          authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ eventId: event.id }),
       });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || 'Unable to prepare gallery access.');
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Your session expired. Please log in again and retry sharing.');
+        }
+        if (response.status === 409) {
+          throw new Error('Activate Client Delivery before sharing this event.');
+        }
+        throw new Error(payload.error || 'Unable to prepare gallery access.');
+      }
+
       setShareEvent(event);
       const url = `${window.location.origin}${payload.sharePath}`;
       setShareUrl(url);
@@ -562,40 +575,13 @@ export default function PhotographerEventsPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={shareOpen} onOpenChange={setShareOpen}>
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Share Event</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 mt-4">
-            <p className="text-sm text-muted-foreground">
-              Scan this QR code or copy the link to send WhatsApp OTP-protected event access to your client.
-            </p>
-            <div className="flex justify-center p-4 rounded-xl border border-muted bg-muted/50">
-              {shareUrl ? <QRCodeSVG value={shareUrl} size={200} /> : <div className="text-muted-foreground">Preparing QR...</div>}
-            </div>
-            <div>
-              <p className="mb-1 text-xs font-medium uppercase text-muted-foreground">Share link</p>
-              <div className="rounded-lg border bg-background p-3 text-sm break-words">{shareUrl || 'No link available yet.'}</div>
-            </div>
-            <div>
-              <p className="mb-1 text-xs font-medium uppercase text-muted-foreground">Download link</p>
-              <div className="rounded-lg border bg-background p-3 text-sm break-words">{shareUrl || 'No link available yet.'}</div>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <Button className="flex-1" onClick={() => { navigator.clipboard.writeText(shareUrl); toast({ title: 'Copied', description: 'Share link copied to clipboard.' }); }}>
-                <Copy className="mr-2 h-4 w-4" />Copy Link
-              </Button>
-              <Button variant="outline" className="flex-1" onClick={() => { navigator.clipboard.writeText(shareUrl); toast({ title: 'Copied', description: 'Download link copied to clipboard.' }); }}>
-                <Copy className="mr-2 h-4 w-4" />Copy Download
-              </Button>
-              <Button variant="outline" className="flex-1" onClick={() => shareUrl && window.open(shareUrl, '_blank')}>
-                <Eye className="mr-2 h-4 w-4" />Open
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <EventShareDialog
+        event={shareEvent}
+        shareUrl={shareUrl}
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        onOpenGallery={(event) => setPreviewEvent(event as EventRecord)}
+      />
 
       <EventPreviewModal
         event={previewEvent}

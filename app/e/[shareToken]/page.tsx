@@ -9,6 +9,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
+import { downloadFromResponse } from '@/lib/download-file';
+import { supabase } from '@/lib/supabase';
 
 type EventData = {
   id: string;
@@ -73,8 +75,31 @@ export default function EventAccessPage() {
   async function loadAccessState() {
     setLoading(true);
     try {
-      const sessionResponse = await fetch(`/api/gallery-access/session?shareToken=${shareToken}`);
-      const session = await sessionResponse.json();
+      let sessionResponse = await fetch(`/api/gallery-access/session?shareToken=${shareToken}`);
+      let session = await sessionResponse.json();
+
+      if (!session.verified) {
+        const { data: { session: authSession } } = await supabase.auth.getSession();
+        if (authSession?.access_token) {
+          const staffResponse = await fetch('/api/gallery-access/staff-session', {
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json',
+              authorization: `Bearer ${authSession.access_token}`,
+            },
+            body: JSON.stringify({ shareToken }),
+            credentials: 'include',
+          });
+
+          if (staffResponse.ok) {
+            sessionResponse = await fetch(`/api/gallery-access/session?shareToken=${shareToken}`, {
+              credentials: 'include',
+            });
+            session = await sessionResponse.json();
+          }
+        }
+      }
+
       if (session.verified) {
         setVerified(true);
         setEvent(session.event);
@@ -180,12 +205,24 @@ export default function EventAccessPage() {
     setSelectedIds(new Set(visiblePhotos.map((photo) => photo.id)));
   }
 
-  function downloadSingle(photo: GalleryPhoto) {
-    const anchor = document.createElement('a');
-    anchor.href = photo.display_url;
-    anchor.download = photo.filename || 'rub-shoots-photo.jpg';
-    anchor.target = '_blank';
-    anchor.click();
+  async function downloadSingle(photo: GalleryPhoto) {
+    setSubmitting(true);
+    try {
+      const response = await fetch('/api/gallery-access/download', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ shareToken, photoId: photo.id }),
+      });
+      await downloadFromResponse(response, photo.filename || 'rub-shoots-photo.jpg');
+    } catch (error) {
+      toast({
+        title: 'Download failed',
+        description: error instanceof Error ? error.message : 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function downloadZip() {
@@ -197,17 +234,7 @@ export default function EventAccessPage() {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ shareToken, photoIds: Array.from(selectedIds) }),
       });
-      if (!response.ok) {
-        const payload = await response.json();
-        throw new Error(payload.error || 'Unable to create ZIP.');
-      }
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = `${event?.name || 'rub-gallery'}.zip`;
-      anchor.click();
-      URL.revokeObjectURL(url);
+      await downloadFromResponse(response, `${event?.name || 'rub-gallery'}.zip`);
     } catch (error) {
       toast({
         title: 'Download failed',
