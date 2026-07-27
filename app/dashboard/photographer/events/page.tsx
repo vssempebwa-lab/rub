@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/features/auth/hooks/use-auth';
 import { EventCard, type EventCardData } from './EventCard';
 import { EventPreviewModal } from './EventPreviewModal';
 import { EventShareDialog } from './EventShareDialog';
@@ -150,6 +151,8 @@ function BannerUploader({ id, label, hint, previewUrl, onSelect, onRemove }: Ban
 
 export default function PhotographerEventsPage() {
   const router = useRouter();
+  const { role } = useAuth();
+  const isAdmin = role === 'admin';
   const [events, setEvents] = useState<EventRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
@@ -159,6 +162,7 @@ export default function PhotographerEventsPage() {
   const [shareEvent, setShareEvent] = useState<EventRecord | null>(null);
   const [previewEvent, setPreviewEvent] = useState<EventRecord | null>(null);
   const [shareUrl, setShareUrl] = useState('');
+  const [shareExpirationDate, setShareExpirationDate] = useState<string | null>(null);
   const [shareLoading, setShareLoading] = useState(false);
   const [savingEvent, setSavingEvent] = useState(false);
   const [desktopBannerFile, setDesktopBannerFile] = useState<File | null>(null);
@@ -342,7 +346,7 @@ export default function PhotographerEventsPage() {
       name: form.name,
       event_date: form.event_date || null,
       location: form.location || null,
-      expiration_date: form.expiration_date || null,
+      ...(isAdmin ? { expiration_date: form.expiration_date || null } : {}),
       password: form.password || null,
       description: buildDescription(form),
       cover_image_url: desktopBannerUrl,
@@ -425,6 +429,7 @@ export default function PhotographerEventsPage() {
       setShareEvent(event);
       const url = `${window.location.origin}${payload.sharePath}`;
       setShareUrl(url);
+      setShareExpirationDate(payload.expirationDate || event.expiration_date || null);
       setShareOpen(true);
       toast({ title: 'Gallery access ready', description: 'Share the QR code or link with your client.' });
     } catch (err: any) {
@@ -432,6 +437,37 @@ export default function PhotographerEventsPage() {
     } finally {
       setShareLoading(false);
     }
+  }
+
+  async function updateShareExpiration(expirationDate: string | null) {
+    if (!shareEvent) return;
+
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session?.access_token) {
+      throw new Error('Your session expired. Please log in again.');
+    }
+
+    const response = await fetch('/api/gallery-access/share', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ eventId: shareEvent.id, expirationDate }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(payload.error || 'Unable to update gallery link expiry.');
+    }
+
+    const nextExpiration = payload.expirationDate || null;
+    setShareExpirationDate(nextExpiration);
+    setShareEvent({ ...shareEvent, expiration_date: nextExpiration });
+    setEvents((current) =>
+      current.map((event) =>
+        event.id === shareEvent.id ? { ...event, expiration_date: nextExpiration } : event,
+      ),
+    );
   }
 
   function openAddPhotos(eventId: string) {
@@ -501,10 +537,19 @@ export default function PhotographerEventsPage() {
                   <label className="text-sm font-medium mb-1 block">Event Location</label>
                   <Input value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} />
                 </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Media Expiry Date</label>
-                  <Input type="date" value={form.expiration_date} onChange={e => setForm({ ...form, expiration_date: e.target.value })} />
-                </div>
+                {isAdmin && (
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">Gallery Link Expiry</label>
+                    <Input
+                      type="date"
+                      value={form.expiration_date}
+                      onChange={e => setForm({ ...form, expiration_date: e.target.value })}
+                    />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Clients lose access after this date. Leave blank to use the admin default when sharing.
+                    </p>
+                  </div>
+                )}
                 <div>
                   <label className="text-sm font-medium mb-1 block">Client Name</label>
                   <Input value={form.client_name} onChange={e => setForm({ ...form, client_name: e.target.value })} />
@@ -578,8 +623,11 @@ export default function PhotographerEventsPage() {
       <EventShareDialog
         event={shareEvent}
         shareUrl={shareUrl}
+        expirationDate={shareExpirationDate}
         open={shareOpen}
         onOpenChange={setShareOpen}
+        isAdmin={isAdmin}
+        onExpirationChange={isAdmin ? updateShareExpiration : undefined}
         onOpenGallery={(event) => setPreviewEvent(event as EventRecord)}
       />
 

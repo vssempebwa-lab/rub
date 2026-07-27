@@ -1,5 +1,8 @@
 import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
+import { isGalleryLinkExpired } from '@/lib/gallery-link-expiry';
+
+export { isGalleryLinkExpired } from '@/lib/gallery-link-expiry';
 
 export const GALLERY_ACCESS_COOKIE = 'rub_gallery_access';
 export const GALLERY_SESSION_HOURS = Number(process.env.GALLERY_ACCESS_SESSION_HOURS || 24);
@@ -10,6 +13,7 @@ export type GalleryAccessEvent = {
   share_token: string | null;
   gallery_url: string | null;
   event_date: string | null;
+  expiration_date: string | null;
   location: string | null;
   description: string | null;
   cover_image_url: string | null;
@@ -19,6 +23,9 @@ export type GalleryAccessEvent = {
   allow_comments: boolean;
   is_public: boolean;
 };
+
+const galleryEventFields =
+  'id,name,share_token,gallery_url,event_date,expiration_date,location,description,cover_image_url,mobile_cover_image_url,allow_favorites,allow_downloads,allow_comments,is_public';
 
 export function getServerSupabase(useServiceRole = true, accessToken?: string) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -112,19 +119,23 @@ export function getPhotoPath(url: string | null | undefined) {
   return '';
 }
 
-export async function findPublicGalleryEvent(shareToken: string) {
+export async function findGalleryEventByShareToken(shareToken: string) {
   const supabase = getServerSupabase(true);
   const { data, error } = await supabase
     .from('events')
-    .select(
-      'id,name,share_token,gallery_url,event_date,location,description,cover_image_url,mobile_cover_image_url,allow_favorites,allow_downloads,allow_comments,is_public',
-    )
+    .select(galleryEventFields)
     .or(`share_token.eq.${shareToken},gallery_url.eq.${shareToken}`)
     .eq('is_public', true)
     .maybeSingle();
 
   if (error) throw error;
   return data as GalleryAccessEvent | null;
+}
+
+export async function findPublicGalleryEvent(shareToken: string) {
+  const event = await findGalleryEventByShareToken(shareToken);
+  if (!event || isGalleryLinkExpired(event.expiration_date)) return null;
+  return event;
 }
 
 export async function verifyGallerySession(shareToken: string, token: string | undefined) {
@@ -146,4 +157,38 @@ export async function verifyGallerySession(shareToken: string, token: string | u
   }
 
   return event;
+}
+
+export function getGalleryAccessCookie(request: Request) {
+  const prefix = `${GALLERY_ACCESS_COOKIE}=`;
+  const cookieHeader = request.headers.get('cookie') ?? '';
+  const match = cookieHeader
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(prefix));
+
+  return match ? decodeURIComponent(match.slice(prefix.length)) : undefined;
+}
+
+export async function resolveGalleryAccess(request: Request, shareToken: string) {
+  const fromCookie = await verifyGallerySession(shareToken, getGalleryAccessCookie(request));
+  if (fromCookie) return fromCookie;
+
+  const authHeader = request.headers.get('authorization') ?? '';
+  const accessToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  if (!accessToken) return null;
+
+  const userClient = getServerSupabase(false, accessToken);
+  const { data: userData, error: userError } = await userClient.auth.getUser(accessToken);
+  if (userError || !userData.user) return null;
+
+  const { data: profile } = await userClient
+    .from('profiles')
+    .select('role')
+    .eq('id', userData.user.id)
+    .single();
+
+  if (!['admin', 'photographer'].includes(profile?.role ?? '')) return null;
+
+  return findGalleryEventByShareToken(shareToken);
 }

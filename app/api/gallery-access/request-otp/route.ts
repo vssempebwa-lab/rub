@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import {
-  findPublicGalleryEvent,
+  findGalleryEventByShareToken,
   generateOtp,
   hashSecret,
+  isGalleryLinkExpired,
   normalizePhone,
   getServerSupabase,
 } from '@/lib/gallery-access';
@@ -68,8 +69,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Enter a valid name and WhatsApp number.' }, { status: 400 });
   }
 
-  const event = await findPublicGalleryEvent(shareToken);
+  const event = await findGalleryEventByShareToken(shareToken);
   if (!event) return NextResponse.json({ error: 'Gallery not found.' }, { status: 404 });
+  if (isGalleryLinkExpired(event.expiration_date)) {
+    return NextResponse.json(
+      { error: 'This gallery link has expired.', expired: true, expirationDate: event.expiration_date },
+      { status: 410 },
+    );
+  }
 
   const supabase = getServerSupabase(true);
   const since = new Date(Date.now() - RATE_WINDOW_MINUTES * 60 * 1000).toISOString();

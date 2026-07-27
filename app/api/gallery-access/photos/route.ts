@@ -1,18 +1,9 @@
 import { NextResponse } from 'next/server';
-import { GALLERY_ACCESS_COOKIE, getPhotoPath, getServerSupabase, verifyGallerySession } from '@/lib/gallery-access';
-
-function getAccessCookie(request: Request) {
-  return request.headers
-    .get('cookie')
-    ?.split(';')
-    .map((part) => part.trim())
-    .find((part) => part.startsWith(`${GALLERY_ACCESS_COOKIE}=`))
-    ?.split('=')[1];
-}
+import { getPhotoPath, getServerSupabase, resolveGalleryAccess } from '@/lib/gallery-access';
 
 export async function GET(request: Request) {
   const shareToken = new URL(request.url).searchParams.get('shareToken') || '';
-  const event = await verifyGallerySession(shareToken, getAccessCookie(request));
+  const event = await resolveGalleryAccess(request, shareToken);
 
   if (!event) return NextResponse.json({ error: 'Gallery access required.' }, { status: 401 });
 
@@ -31,8 +22,12 @@ export async function GET(request: Request) {
       const displayPath = getPhotoPath(photo.url);
       const thumbPath = getPhotoPath(photo.thumbnail_url || photo.url);
       const [{ data: display }, { data: thumb }] = await Promise.all([
-        supabase.storage.from('photos').createSignedUrl(displayPath, 60 * 60),
-        supabase.storage.from('photos').createSignedUrl(thumbPath, 60 * 60),
+        displayPath
+          ? supabase.storage.from('photos').createSignedUrl(displayPath, 60 * 60)
+          : Promise.resolve({ data: null }),
+        thumbPath
+          ? supabase.storage.from('photos').createSignedUrl(thumbPath, 60 * 60)
+          : Promise.resolve({ data: null }),
       ]);
 
       return {

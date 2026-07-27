@@ -60,6 +60,8 @@ export default function EventAccessPage() {
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [activePhoto, setActivePhoto] = useState<GalleryPhoto | null>(null);
+  const [linkExpired, setLinkExpired] = useState(false);
+  const [expiredAt, setExpiredAt] = useState<string | null>(null);
 
   useEffect(() => {
     if (!shareToken) return;
@@ -72,10 +74,21 @@ export default function EventAccessPage() {
     return photos.filter((photo) => (photo.filename || '').toLowerCase().includes(query));
   }, [photos, search]);
 
+  async function getGalleryAuthHeaders() {
+    const { data: { session } } = await supabase.auth.getSession();
+    return {
+      'content-type': 'application/json',
+      ...(session?.access_token ? { authorization: `Bearer ${session.access_token}` } : {}),
+    };
+  }
+
   async function loadAccessState() {
     setLoading(true);
     try {
-      let sessionResponse = await fetch(`/api/gallery-access/session?shareToken=${shareToken}`);
+      let sessionResponse = await fetch(`/api/gallery-access/session?shareToken=${shareToken}`, {
+        credentials: 'include',
+        headers: await getGalleryAuthHeaders(),
+      });
       let session = await sessionResponse.json();
 
       if (!session.verified) {
@@ -94,6 +107,7 @@ export default function EventAccessPage() {
           if (staffResponse.ok) {
             sessionResponse = await fetch(`/api/gallery-access/session?shareToken=${shareToken}`, {
               credentials: 'include',
+              headers: await getGalleryAuthHeaders(),
             });
             session = await sessionResponse.json();
           }
@@ -108,6 +122,12 @@ export default function EventAccessPage() {
       } else {
         const eventResponse = await fetch(`/api/gallery-access/event?shareToken=${shareToken}`);
         const eventPayload = await eventResponse.json();
+        if (eventResponse.status === 410) {
+          setLinkExpired(true);
+          setExpiredAt(eventPayload.expirationDate || null);
+          setEvent(null);
+          return;
+        }
         if (!eventResponse.ok) throw new Error(eventPayload.error || 'Gallery not found.');
         setEvent(eventPayload.event);
       }
@@ -123,7 +143,10 @@ export default function EventAccessPage() {
   }
 
   async function loadPhotos() {
-    const response = await fetch(`/api/gallery-access/photos?shareToken=${shareToken}`);
+    const response = await fetch(`/api/gallery-access/photos?shareToken=${shareToken}`, {
+      credentials: 'include',
+      headers: await getGalleryAuthHeaders(),
+    });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || 'Unable to load photos.');
     setEvent(payload.event);
@@ -165,6 +188,7 @@ export default function EventAccessPage() {
     try {
       const response = await fetch('/api/gallery-access/verify-otp', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ shareToken, otpId, otp }),
       });
@@ -210,7 +234,8 @@ export default function EventAccessPage() {
     try {
       const response = await fetch('/api/gallery-access/download', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        credentials: 'include',
+        headers: await getGalleryAuthHeaders(),
         body: JSON.stringify({ shareToken, photoId: photo.id }),
       });
       await downloadFromResponse(response, photo.filename || 'rub-shoots-photo.jpg');
@@ -231,7 +256,8 @@ export default function EventAccessPage() {
     try {
       const response = await fetch('/api/gallery-access/download-zip', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        credentials: 'include',
+        headers: await getGalleryAuthHeaders(),
         body: JSON.stringify({ shareToken, photoIds: Array.from(selectedIds) }),
       });
       await downloadFromResponse(response, `${event?.name || 'rub-gallery'}.zip`);
@@ -250,6 +276,22 @@ export default function EventAccessPage() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-muted/30">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </main>
+    );
+  }
+
+  if (linkExpired) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-muted/30 px-6">
+        <div className="max-w-md text-center">
+          <LockKeyhole className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+          <h1 className="text-xl font-semibold">This gallery link has expired</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {expiredAt
+              ? `Access ended on ${new Date(expiredAt).toLocaleDateString()}.`
+              : 'Please contact Rub Shoots Photography if you still need your photos.'}
+          </p>
+        </div>
       </main>
     );
   }

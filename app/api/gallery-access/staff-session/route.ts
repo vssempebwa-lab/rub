@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import {
-  findPublicGalleryEvent,
+  findGalleryEventByShareToken,
   GALLERY_ACCESS_COOKIE,
   GALLERY_SESSION_HOURS,
   generateAccessToken,
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   }
 
   const { shareToken } = await request.json();
-  const event = await findPublicGalleryEvent(String(shareToken || ''));
+  const event = await findGalleryEventByShareToken(String(shareToken || ''));
   if (!event) return NextResponse.json({ error: 'Gallery not found.' }, { status: 404 });
 
   const service = getServerSupabase(true);

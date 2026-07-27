@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabase';
 import { MarketingPage } from '@/components/layout/marketing-page';
 import { toast } from '@/hooks/use-toast';
 import { downloadFromResponse } from '@/lib/download-file';
+import { isGalleryLinkExpired } from '@/lib/gallery-link-expiry';
 import { defaultSiteSettings, fetchSiteSettings } from '@/features/website/site-settings';
 import { resolvePhotoDisplayUrls } from '@/lib/photo-display-url';
 
@@ -39,6 +40,7 @@ interface EventData {
   cover_image_url: string | null;
   event_date: string | null;
   location: string | null;
+  expiration_date: string | null;
   allow_favorites: boolean;
   allow_downloads: boolean;
   allow_comments: boolean;
@@ -73,6 +75,7 @@ export default function GalleryPage() {
   const [commentForm, setCommentForm] = useState({ author_name: '', content: '' });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [linkExpired, setLinkExpired] = useState(false);
   const [settings, setSettings] = useState(defaultSiteSettings);
 
   useEffect(() => {
@@ -105,6 +108,13 @@ export default function GalleryPage() {
       .maybeSingle();
 
     if (eventData) {
+      if (isGalleryLinkExpired(eventData.expiration_date)) {
+        setEvent(null);
+        setLinkExpired(true);
+        setLoading(false);
+        return;
+      }
+
       setEvent(eventData);
       if (!eventData.password) setAuthenticated(true);
       if (!eventData.password) setAccessStep('gallery');
@@ -254,8 +264,14 @@ export default function GalleryPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Camera className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h2 className="text-xl font-bold mb-2">Gallery Not Found</h2>
-          <p className="text-muted-foreground">This gallery does not exist or has been removed.</p>
+          <h2 className="text-xl font-bold mb-2">
+            {linkExpired ? 'This gallery link has expired' : 'Gallery Not Found'}
+          </h2>
+          <p className="text-muted-foreground">
+            {linkExpired
+              ? 'Please contact Rub Shoots Photography if you still need your photos.'
+              : 'This gallery does not exist or has been removed.'}
+          </p>
           <Link href="/" className="text-primary hover:underline mt-4 inline-block">Back to Home</Link>
         </div>
       </div>

@@ -1459,6 +1459,30 @@ export function AdminSiteCustomizationPanel({ userId }: AdminSiteCustomizationPa
                   <Switch checked={checked} onCheckedChange={(value) => setSettings({ ...settings, featureToggles: { ...settings.featureToggles, [key]: value } })} />
                 </div>
               ))}
+              <div className="rounded-lg border p-4 space-y-3">
+                <div>
+                  <p className="font-medium">Default gallery link expiry</p>
+                  <p className="text-sm text-muted-foreground">
+                    Number of days before client gallery links expire when no specific expiry date is set on the event.
+                    Use 0 to leave links open until an admin sets a date.
+                  </p>
+                </div>
+                <Input
+                  type="number"
+                  min={0}
+                  max={3650}
+                  value={settings.galleryAccess?.defaultLinkExpiryDays ?? 0}
+                  onChange={(event) =>
+                    setSettings({
+                      ...settings,
+                      galleryAccess: {
+                        ...settings.galleryAccess,
+                        defaultLinkExpiryDays: Math.max(0, Number(event.target.value) || 0),
+                      },
+                    })
+                  }
+                />
+              </div>
               <Button onClick={() => saveSettings('Feature toggle')}><Save className="h-4 w-4 mr-2" /> Save toggles</Button>
             </CardContent>
           </Card>

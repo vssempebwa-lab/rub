@@ -15,7 +15,11 @@ export async function fetchPhotoBytes(url: string) {
   }
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        'user-agent': 'RubShootsGallery/1.0',
+      },
+    });
     if (!response.ok) return null;
 
     return {

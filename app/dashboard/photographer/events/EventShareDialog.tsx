@@ -2,19 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { CalendarDays, Copy, Eye, FolderOpen, MapPin, Share2 } from 'lucide-react';
+import { CalendarDays, Copy, Eye, FolderOpen, MapPin, Share2, Timer } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { toast } from '@/hooks/use-toast';
 import type { EventCardData } from './EventCard';
 
 type EventShareDialogProps = {
   event: EventCardData | null;
   shareUrl: string;
+  expirationDate: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onOpenGallery?: (event: EventCardData) => void;
+  isAdmin?: boolean;
+  onExpirationChange?: (expirationDate: string | null) => Promise<void>;
 };
 
 function formatDate(value: string | null) {
@@ -26,20 +30,34 @@ function formatDate(value: string | null) {
   });
 }
 
+function toDateInputValue(value: string | null) {
+  if (!value) return '';
+  return value.slice(0, 10);
+}
+
 export function EventShareDialog({
   event,
   shareUrl,
+  expirationDate,
   open,
   onOpenChange,
   onOpenGallery,
+  isAdmin = false,
+  onExpirationChange,
 }: EventShareDialogProps) {
   const [desktopCoverFailed, setDesktopCoverFailed] = useState(false);
   const [mobileCoverFailed, setMobileCoverFailed] = useState(false);
+  const [expiryInput, setExpiryInput] = useState('');
+  const [savingExpiry, setSavingExpiry] = useState(false);
 
   useEffect(() => {
     setDesktopCoverFailed(false);
     setMobileCoverFailed(false);
   }, [event?.cover_image_url, event?.mobile_cover_image_url, event?.id]);
+
+  useEffect(() => {
+    setExpiryInput(toDateInputValue(expirationDate));
+  }, [expirationDate, open]);
 
   if (!event) return null;
 
@@ -62,6 +80,23 @@ export function EventShareDialog({
         description: 'Your browser blocked clipboard access. Copy the link manually from the box below.',
         variant: 'destructive',
       });
+    }
+  }
+
+  async function saveExpiry() {
+    if (!onExpirationChange) return;
+    setSavingExpiry(true);
+    try {
+      await onExpirationChange(expiryInput || null);
+      toast({ title: 'Expiry updated', description: 'Gallery link expiry has been saved.' });
+    } catch (error) {
+      toast({
+        title: 'Update failed',
+        description: error instanceof Error ? error.message : 'Unable to update gallery link expiry.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingExpiry(false);
     }
   }
 
@@ -124,6 +159,10 @@ export function EventShareDialog({
               <MapPin className="h-4 w-4 text-orange-700" />
               {event.location || 'No location set'}
             </span>
+            <span className="inline-flex items-center gap-2">
+              <Timer className="h-4 w-4 text-orange-700" />
+              {expirationDate ? `Link expires ${formatDate(expirationDate)}` : 'Link does not expire'}
+            </span>
             <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-foreground">
               {event.photo_count} photo{event.photo_count === 1 ? '' : 's'}
             </span>
@@ -132,6 +171,27 @@ export function EventShareDialog({
           <p className="text-sm text-muted-foreground">
             Send this branded gallery access link to your client. They will verify with WhatsApp OTP before viewing photos.
           </p>
+
+          {isAdmin && (
+            <div className="rounded-xl border bg-muted/20 p-4 space-y-3">
+              <div>
+                <p className="text-sm font-medium">Gallery link expiry</p>
+                <p className="text-xs text-muted-foreground">
+                  Clients lose access after this date. Leave blank to keep the link open.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Input
+                  type="date"
+                  value={expiryInput}
+                  onChange={(event) => setExpiryInput(event.target.value)}
+                />
+                <Button onClick={saveExpiry} disabled={savingExpiry || !onExpirationChange}>
+                  {savingExpiry ? 'Saving...' : 'Save expiry'}
+                </Button>
+              </div>
+            </div>
+          )}
 
           <div className="grid gap-5 md:grid-cols-[220px_minmax(0,1fr)] md:items-start">
             <div className="mx-auto w-full max-w-[220px] rounded-2xl border bg-white p-4 shadow-sm">

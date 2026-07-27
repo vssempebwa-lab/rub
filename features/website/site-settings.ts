@@ -37,6 +37,10 @@ export type FeatureToggles = {
   watermarkedPreviews: boolean;
 };
 
+export type GalleryAccessSettings = {
+  defaultLinkExpiryDays: number;
+};
+
 export type WatermarkingSettings = {
   enabled: boolean;
   text: string;
@@ -62,6 +66,7 @@ export type SiteCustomizationSettings = {
   branding: BrandingSettings;
   seo: SeoSettings;
   featureToggles: FeatureToggles;
+  galleryAccess: GalleryAccessSettings;
   watermarking: WatermarkingSettings;
   serviceCategoryImages: Record<string, AdjustableImageSettings>;
 };
@@ -99,6 +104,9 @@ export const defaultSiteSettings: SiteCustomizationSettings = {
     homepageTestimonials: true,
     publicPortfolioHighlights: true,
     watermarkedPreviews: false,
+  },
+  galleryAccess: {
+    defaultLinkExpiryDays: 30,
   },
   watermarking: {
     enabled: false,
