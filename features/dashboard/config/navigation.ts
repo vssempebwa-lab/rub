@@ -32,8 +32,13 @@ export const roleLabels: Record<UserRole, string> = {
 
 export const dashboardNavigation: Record<UserRole, NavItem[]> = {
   admin: [
-    { label: 'Dashboard', href: '/dashboard/admin', icon: LayoutDashboard },
-    { label: 'Update System', href: '/dashboard/admin/system', icon: RefreshCw },
+    { label: 'Admin Dashboard', href: '/dashboard/admin', icon: LayoutDashboard },
+    { label: 'Events', href: '/dashboard/photographer/events', icon: FolderOpen },
+    { label: 'Upload Photos', href: '/dashboard/photographer/upload', icon: ImageIcon },
+    { label: 'Galleries', href: '/dashboard/photographer/galleries', icon: ImageIcon },
+    { label: 'Messages', href: '/dashboard/photographer/messages', icon: MessageSquare },
+    { label: 'Profile', href: '/dashboard/photographer/profile', icon: UserCircle },
+    { label: 'Site Customization', href: '/dashboard/admin/system', icon: RefreshCw },
   ],
   photographer: [
     { label: 'Dashboard', href: '/dashboard/photographer', icon: LayoutDashboard },

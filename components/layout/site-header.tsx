@@ -4,16 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Camera, Menu, X, LayoutDashboard, ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Camera, Menu, X } from 'lucide-react';
 import { useWebsiteContent } from '@/features/website/hooks/use-website-content';
 import { defaultSiteSettings, fetchSiteSettings } from '@/features/website/site-settings';
 
@@ -97,28 +88,7 @@ export function SiteHeader({ fixed = false, showNav = true, extraActions }: Site
             </nav>
           )}
 
-          <div className="hidden lg:flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1.5">
-                  <LayoutDashboard className="h-4 w-4" />
-                  <span>Workspace</span>
-                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuLabel>Workspace</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/photographer" className="cursor-pointer">
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                    Photographer
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            {extraActions}
-          </div>
+          {extraActions && <div className="hidden lg:flex items-center gap-2">{extraActions}</div>}
 
           <button
             type="button"
@@ -146,27 +116,6 @@ export function SiteHeader({ fixed = false, showNav = true, extraActions }: Site
               {link.label}
             </Link>
           ))}
-          <div className="pt-3 mt-2 border-t">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="w-full justify-start gap-2">
-                  <LayoutDashboard className="h-4 w-4" />
-                  <span>Workspace</span>
-                  <ChevronDown className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-52">
-                <DropdownMenuLabel>Workspace</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/photographer" className="cursor-pointer" onClick={closeMobile}>
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                    Photographer
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
           {extraActions && <div className="pt-3 mt-2 border-t space-y-2">{extraActions}</div>}
         </div>
       )}

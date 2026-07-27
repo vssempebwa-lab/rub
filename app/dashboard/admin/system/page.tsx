@@ -6,7 +6,7 @@ import { useAuth } from '@/features/auth/hooks/use-auth';
 import { AdminSiteCustomizationPanel } from '@/features/website/components/admin-site-customization-panel';
 
 export default function AdminSystemPage() {
-  const { loading, role, profile } = useAuth({ redirectTo: '/login' });
+  const { loading, role, profile } = useAuth({ redirectTo: '/admin/login' });
 
   if (loading) {
     return (

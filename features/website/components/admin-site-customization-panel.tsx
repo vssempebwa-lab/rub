@@ -191,7 +191,7 @@ export function AdminSiteCustomizationPanel({ userId }: AdminSiteCustomizationPa
 
   async function saveContent<K extends keyof SiteContentMap>(key: K, label: string) {
     setSaving(key);
-    const { error } = await saveSiteContent(key, content[key]);
+    const { error } = await saveSiteContent(key, content[key], userId);
     setSaving(null);
     if (error) {
       toast({ title: 'Save failed', description: error, variant: 'destructive' });
@@ -464,8 +464,14 @@ export function AdminSiteCustomizationPanel({ userId }: AdminSiteCustomizationPa
         await saveSettings(section, next);
       } else {
         setContent(next);
-        const key = folder === 'homepage' ? 'home' : 'business';
-        await saveSiteContent(key, next[key]);
+        const contentKeyByFolder: Partial<Record<string, keyof SiteContentMap>> = {
+          homepage: 'home',
+          about: 'about',
+          services: 'services',
+          business: 'business',
+        };
+        const key = contentKeyByFolder[folder] ?? 'business';
+        await saveSiteContent(key, next[key], userId);
         toast({ title: 'Uploaded', description: `${section} asset is live.` });
       }
     } catch (error) {
@@ -489,6 +495,7 @@ export function AdminSiteCustomizationPanel({ userId }: AdminSiteCustomizationPa
 
   const business = content.business;
   const home = content.home;
+  const about = content.about;
 
   return (
     <div className="space-y-6">
@@ -505,6 +512,7 @@ export function AdminSiteCustomizationPanel({ userId }: AdminSiteCustomizationPa
           <TabsTrigger value="pricing">Pricing</TabsTrigger>
           <TabsTrigger value="branding">Branding</TabsTrigger>
           <TabsTrigger value="homepage">Homepage</TabsTrigger>
+          <TabsTrigger value="about">About</TabsTrigger>
           <TabsTrigger value="team">Team</TabsTrigger>
           <TabsTrigger value="services">Services</TabsTrigger>
           <TabsTrigger value="business">Business Info</TabsTrigger>
@@ -787,6 +795,136 @@ export function AdminSiteCustomizationPanel({ userId }: AdminSiteCustomizationPa
                     </div>
                   </div>
                 ))}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="about">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>About Page</CardTitle>
+                <CardDescription>Hero, story, mission, vision, team intro, and call-to-action copy.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <FieldGroup label="Hero title">
+                    <Input value={about.hero.title} onChange={(event) => setContent({ ...content, about: { ...about, hero: { ...about.hero, title: event.target.value } } })} />
+                  </FieldGroup>
+                  <FieldGroup label="Hero subtitle">
+                    <Textarea rows={2} value={about.hero.subtitle} onChange={(event) => setContent({ ...content, about: { ...about, hero: { ...about.hero, subtitle: event.target.value } } })} />
+                  </FieldGroup>
+                </div>
+                <FieldGroup label="Hero image URL">
+                  <div className="flex gap-2">
+                    <Input value={about.hero.imageUrl} onChange={(event) => setContent({ ...content, about: { ...about, hero: { ...about.hero, imageUrl: event.target.value } } })} />
+                    <Button variant="outline" size="icon" asChild>
+                      <label>
+                        <Upload className="h-4 w-4" />
+                        <Input className="hidden" type="file" accept="image/*" onChange={(event) => uploadAndSet(event.target.files?.[0], 'about', (url) => ({ ...content, about: { ...about, hero: { ...about.hero, imageUrl: url } } }), 'About hero')} />
+                      </label>
+                    </Button>
+                  </div>
+                </FieldGroup>
+                <div className="overflow-hidden rounded-lg border bg-neutral-950">
+                  <div className="relative aspect-[16/6]">
+                    <Image src={about.hero.imageUrl} alt="About hero preview" fill className="object-cover" sizes="720px" />
+                    <div className="absolute inset-0 bg-black/50" />
+                    <div className="absolute inset-0 flex items-center justify-center px-5 text-center text-white">
+                      <div>
+                        <p className="font-[family-name:var(--font-playfair)] text-3xl font-bold">{about.hero.title}</p>
+                        <p className="mt-2 text-sm text-white/80">{about.hero.subtitle}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <FieldGroup label="Story title">
+                    <Input value={about.story.title} onChange={(event) => setContent({ ...content, about: { ...about, story: { ...about.story, title: event.target.value } } })} />
+                  </FieldGroup>
+                  <FieldGroup label="Story image URL">
+                    <div className="flex gap-2">
+                      <Input value={about.story.imageUrl} onChange={(event) => setContent({ ...content, about: { ...about, story: { ...about.story, imageUrl: event.target.value } } })} />
+                      <Button variant="outline" size="icon" asChild>
+                        <label>
+                          <Upload className="h-4 w-4" />
+                          <Input className="hidden" type="file" accept="image/*" onChange={(event) => uploadAndSet(event.target.files?.[0], 'about', (url) => ({ ...content, about: { ...about, story: { ...about.story, imageUrl: url } } }), 'About story')} />
+                        </label>
+                      </Button>
+                    </div>
+                  </FieldGroup>
+                </div>
+                <FieldGroup label="Story paragraphs">
+                  <StringListEditor values={about.story.paragraphs} onChange={(paragraphs) => setContent({ ...content, about: { ...about, story: { ...about.story, paragraphs } } })} />
+                </FieldGroup>
+                <FieldGroup label="Story values">
+                  <div className="space-y-2">
+                    {about.story.values.map((value, index) => (
+                      <div key={index} className="grid gap-2 sm:grid-cols-[1fr_2fr_auto]">
+                        <Input placeholder="Icon name" value={value.icon} onChange={(event) => {
+                          const values = [...about.story.values];
+                          values[index] = { ...value, icon: event.target.value };
+                          setContent({ ...content, about: { ...about, story: { ...about.story, values } } });
+                        }} />
+                        <Input placeholder="Label" value={value.label} onChange={(event) => {
+                          const values = [...about.story.values];
+                          values[index] = { ...value, label: event.target.value };
+                          setContent({ ...content, about: { ...about, story: { ...about.story, values } } });
+                        }} />
+                        <Button type="button" variant="outline" size="icon" onClick={() => {
+                          const values = about.story.values.filter((_, i) => i !== index);
+                          setContent({ ...content, about: { ...about, story: { ...about.story, values } } });
+                        }}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button type="button" variant="outline" size="sm" onClick={() => setContent({ ...content, about: { ...about, story: { ...about.story, values: [...about.story.values, { icon: 'Heart', label: '' }] } } })}>
+                      <Plus className="h-4 w-4 mr-2" /> Add value
+                    </Button>
+                  </div>
+                </FieldGroup>
+
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="space-y-4 rounded-lg border p-4">
+                    <FieldGroup label="Mission title">
+                      <Input value={about.mission.title} onChange={(event) => setContent({ ...content, about: { ...about, mission: { ...about.mission, title: event.target.value } } })} />
+                    </FieldGroup>
+                    <FieldGroup label="Mission content">
+                      <Textarea rows={4} value={about.mission.content} onChange={(event) => setContent({ ...content, about: { ...about, mission: { ...about.mission, content: event.target.value } } })} />
+                    </FieldGroup>
+                  </div>
+                  <div className="space-y-4 rounded-lg border p-4">
+                    <FieldGroup label="Vision title">
+                      <Input value={about.vision.title} onChange={(event) => setContent({ ...content, about: { ...about, vision: { ...about.vision, title: event.target.value } } })} />
+                    </FieldGroup>
+                    <FieldGroup label="Vision content">
+                      <Textarea rows={4} value={about.vision.content} onChange={(event) => setContent({ ...content, about: { ...about, vision: { ...about.vision, content: event.target.value } } })} />
+                    </FieldGroup>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <FieldGroup label="Team section title">
+                    <Input value={about.teamSection.title} onChange={(event) => setContent({ ...content, about: { ...about, teamSection: { ...about.teamSection, title: event.target.value } } })} />
+                  </FieldGroup>
+                  <FieldGroup label="Team section subtitle">
+                    <Input value={about.teamSection.subtitle} onChange={(event) => setContent({ ...content, about: { ...about, teamSection: { ...about.teamSection, subtitle: event.target.value } } })} />
+                  </FieldGroup>
+                  <FieldGroup label="CTA title">
+                    <Input value={about.cta.title} onChange={(event) => setContent({ ...content, about: { ...about, cta: { ...about.cta, title: event.target.value } } })} />
+                  </FieldGroup>
+                  <FieldGroup label="CTA subtitle">
+                    <Input value={about.cta.subtitle} onChange={(event) => setContent({ ...content, about: { ...about, cta: { ...about.cta, subtitle: event.target.value } } })} />
+                  </FieldGroup>
+                </div>
+
+                <Button onClick={() => saveContent('about', 'About page')} disabled={saving === 'about'}>
+                  {saving === 'about' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                  Save about page
+                </Button>
               </CardContent>
             </Card>
           </div>

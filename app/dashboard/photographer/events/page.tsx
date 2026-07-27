@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Image as ImageIcon, Loader2, Plus, Eye, Copy, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -20,6 +21,7 @@ interface EventRecord extends EventCardData {
   event_date: string | null;
   location: string | null;
   gallery_url: string | null;
+  share_token: string | null;
   qr_code_url: string | null;
   status: string;
   password: string | null;
@@ -45,6 +47,7 @@ interface EventForm {
   description: string;
   cover_image_url: string;
   mobile_cover_image_url: string;
+  is_public: boolean;
 }
 
 const defaultForm: EventForm = {
@@ -59,6 +62,7 @@ const defaultForm: EventForm = {
   description: '',
   cover_image_url: '',
   mobile_cover_image_url: '',
+  is_public: false,
 };
 
 const BANNER_BUCKET = 'event-media';
@@ -243,6 +247,7 @@ export default function PhotographerEventsPage() {
       client_phone: parsed.client_phone,
       cover_image_url: event.cover_image_url || '',
       mobile_cover_image_url: event.mobile_cover_image_url || '',
+      is_public: event.is_public,
     });
     resetBannerFiles();
     setDesktopBannerPreview(event.cover_image_url || '');
@@ -343,7 +348,7 @@ export default function PhotographerEventsPage() {
       cover_image_url: desktopBannerUrl,
       mobile_cover_image_url: mobileBannerUrl,
       gallery_url: editingEvent?.gallery_url || `event-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
-      is_public: editingEvent?.is_public || false,
+      is_public: form.is_public,
       };
 
       if (editingEvent) {
@@ -382,20 +387,33 @@ export default function PhotographerEventsPage() {
   }
 
   async function handleShare(event: EventRecord) {
+    if (!event.is_public) {
+      toast({
+        title: 'Client delivery is off',
+        description: 'Edit the event and activate Client Delivery before sharing access.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setShareLoading(true);
     try {
-      const updates: any = { is_public: true };
-      if (!event.gallery_url) {
-        updates.gallery_url = `event-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
-      }
-      const { data, error } = await supabase.from('events').update(updates).eq('id', event.id).select().single();
-      if (error) throw error;
-      const slug = data.gallery_url || data.id;
-      setShareEvent(data);
-      const url = `${window.location.origin}/gallery/${slug}`;
+      const { data: { session } } = await supabase.auth.getSession();
+      const response = await fetch('/api/gallery-access/share', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          ...(session?.access_token ? { authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({ eventId: event.id }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Unable to prepare gallery access.');
+      setShareEvent(event);
+      const url = `${window.location.origin}${payload.sharePath}`;
       setShareUrl(url);
       setShareOpen(true);
-      toast({ title: 'Gallery ready', description: 'Share the QR code with your client.' });
+      toast({ title: 'Gallery access ready', description: 'Share the QR code or link with your client.' });
     } catch (err: any) {
       toast({ title: 'Share failed', description: err.message, variant: 'destructive' });
     } finally {
@@ -491,6 +509,18 @@ export default function PhotographerEventsPage() {
                   <Input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
                 </div>
               </div>
+              <label className="flex items-start gap-3 rounded-lg border p-4">
+                <Checkbox
+                  checked={form.is_public}
+                  onCheckedChange={(checked) => setForm({ ...form, is_public: checked === true })}
+                />
+                <span>
+                  <span className="block text-sm font-medium">Activate Client Delivery</span>
+                  <span className="block text-xs text-muted-foreground">
+                    Only activated events can be shared through the client OTP gallery flow.
+                  </span>
+                </span>
+              </label>
               <div>
                 <label className="text-sm font-medium mb-1 block">Notes / Description</label>
                 <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={4} />
@@ -538,17 +568,29 @@ export default function PhotographerEventsPage() {
             <DialogTitle>Share Event</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 mt-4">
-            <p className="text-sm text-muted-foreground">Scan this QR code or copy the link to send event access to your client.</p>
+            <p className="text-sm text-muted-foreground">
+              Scan this QR code or copy the link to send WhatsApp OTP-protected event access to your client.
+            </p>
             <div className="flex justify-center p-4 rounded-xl border border-muted bg-muted/50">
               {shareUrl ? <QRCodeSVG value={shareUrl} size={200} /> : <div className="text-muted-foreground">Preparing QR...</div>}
             </div>
-            <div className="rounded-lg border bg-background p-3 text-sm break-words">{shareUrl || 'No link available yet.'}</div>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <p className="mb-1 text-xs font-medium uppercase text-muted-foreground">Share link</p>
+              <div className="rounded-lg border bg-background p-3 text-sm break-words">{shareUrl || 'No link available yet.'}</div>
+            </div>
+            <div>
+              <p className="mb-1 text-xs font-medium uppercase text-muted-foreground">Download link</p>
+              <div className="rounded-lg border bg-background p-3 text-sm break-words">{shareUrl || 'No link available yet.'}</div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
               <Button className="flex-1" onClick={() => { navigator.clipboard.writeText(shareUrl); toast({ title: 'Copied', description: 'Share link copied to clipboard.' }); }}>
                 <Copy className="mr-2 h-4 w-4" />Copy Link
               </Button>
+              <Button variant="outline" className="flex-1" onClick={() => { navigator.clipboard.writeText(shareUrl); toast({ title: 'Copied', description: 'Download link copied to clipboard.' }); }}>
+                <Copy className="mr-2 h-4 w-4" />Copy Download
+              </Button>
               <Button variant="outline" className="flex-1" onClick={() => shareUrl && window.open(shareUrl, '_blank')}>
-                <Eye className="mr-2 h-4 w-4" />Open Gallery
+                <Eye className="mr-2 h-4 w-4" />Open
               </Button>
             </div>
           </div>

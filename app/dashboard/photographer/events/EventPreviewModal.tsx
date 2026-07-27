@@ -6,6 +6,7 @@ import { FolderOpen, Image as ImageIcon, Loader2, Search } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/lib/supabase';
+import { resolvePhotoDisplayUrls, type PhotoWithDisplayUrls } from '@/lib/photo-display-url';
 import type { EventCardData } from './EventCard';
 
 type EventPreviewModalProps = {
@@ -24,7 +25,7 @@ type PreviewPhoto = {
 export function EventPreviewModal({ event, open, onOpenChange }: EventPreviewModalProps) {
   const [desktopCoverFailed, setDesktopCoverFailed] = useState(false);
   const [mobileCoverFailed, setMobileCoverFailed] = useState(false);
-  const [photos, setPhotos] = useState<PreviewPhoto[]>([]);
+  const [photos, setPhotos] = useState<PhotoWithDisplayUrls<PreviewPhoto>[]>([]);
   const [loadingPhotos, setLoadingPhotos] = useState(false);
   const [photoError, setPhotoError] = useState('');
   const [search, setSearch] = useState('');
@@ -51,7 +52,7 @@ export function EventPreviewModal({ event, open, onOpenChange }: EventPreviewMod
         setPhotoError(error.message);
         setPhotos([]);
       } else {
-        setPhotos(data || []);
+        setPhotos(await resolvePhotoDisplayUrls(data || []));
       }
       setLoadingPhotos(false);
     }
@@ -164,7 +165,7 @@ export function EventPreviewModal({ event, open, onOpenChange }: EventPreviewMod
                 {visiblePhotos.map((photo) => (
                   <div key={photo.id} className="relative aspect-square overflow-hidden rounded-lg bg-muted">
                     <img
-                      src={photo.thumbnail_url || photo.url}
+                      src={photo.thumbnail_display_url || photo.display_url || photo.thumbnail_url || photo.url}
                       alt={photo.filename || event.name}
                       className="h-full w-full object-cover"
                       loading="lazy"

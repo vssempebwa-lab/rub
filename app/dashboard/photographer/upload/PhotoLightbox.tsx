@@ -85,7 +85,7 @@ export function PhotoLightbox({
         </div>
 
         <div className="relative flex min-h-0 flex-1 items-center justify-center p-4">
-          <img src={photo.url} alt={filename} className="max-h-full max-w-full object-contain" />
+          <img src={photo.display_url || photo.url} alt={filename} className="max-h-full max-w-full object-contain" />
 
           <Button
             variant="ghost"

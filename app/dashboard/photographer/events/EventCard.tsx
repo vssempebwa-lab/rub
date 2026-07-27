@@ -12,6 +12,7 @@ export type EventCardData = {
   event_date: string | null;
   location: string | null;
   gallery_url: string | null;
+  share_token?: string | null;
   status: string;
   password: string | null;
   is_public: boolean;

@@ -12,8 +12,6 @@ const refreshTargets = [
   { path: '/gallery/[slug]', type: 'page' as const, label: 'Gallery pages' },
 ];
 
-const allowedRefreshRoles = new Set(['admin', 'photographer']);
-
 function getSupabaseClient(accessToken: string) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -40,23 +38,25 @@ export async function POST(request: Request) {
     const authHeader = request.headers.get('authorization') ?? '';
     const accessToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
 
-    if (accessToken) {
-      const supabase = getSupabaseClient(accessToken);
-      const { data: userData, error: userError } = await supabase.auth.getUser(accessToken);
+    if (!accessToken) {
+      return NextResponse.json({ error: 'Invalid session.' }, { status: 401 });
+    }
 
-      if (userError || !userData.user) {
-        return NextResponse.json({ error: 'Invalid session.' }, { status: 401 });
-      }
+    const supabase = getSupabaseClient(accessToken);
+    const { data: userData, error: userError } = await supabase.auth.getUser(accessToken);
 
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userData.user.id)
-        .single();
+    if (userError || !userData.user) {
+      return NextResponse.json({ error: 'Invalid session.' }, { status: 401 });
+    }
 
-      if (profileError || !allowedRefreshRoles.has(profile?.role ?? '')) {
-        return NextResponse.json({ error: 'Workspace access required.' }, { status: 403 });
-      }
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', userData.user.id)
+      .single();
+
+    if (profileError || profile?.role !== 'admin') {
+      return NextResponse.json({ error: 'Admin access required.' }, { status: 403 });
     }
 
     refreshTargets.forEach(({ path, type }) => revalidatePath(path, type));

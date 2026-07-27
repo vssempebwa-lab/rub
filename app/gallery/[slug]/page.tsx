@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabase';
 import { MarketingPage } from '@/components/layout/marketing-page';
 import { toast } from '@/hooks/use-toast';
 import { defaultSiteSettings, fetchSiteSettings } from '@/features/website/site-settings';
+import { resolvePhotoDisplayUrls } from '@/lib/photo-display-url';
 
 type AccessStep = 'register' | 'otp' | 'password' | 'gallery';
 
@@ -25,6 +26,9 @@ interface Photo {
   thumbnail_url: string | null;
   watermarked_url: string | null;
   filename: string | null;
+  display_url?: string;
+  thumbnail_display_url?: string | null;
+  watermarked_display_url?: string | null;
 }
 
 interface EventData {
@@ -79,16 +83,16 @@ export default function GalleryPage() {
 
   function getPreviewUrl(photo: Photo) {
     if (settings.featureToggles.watermarkedPreviews && photo.watermarked_url) {
-      return photo.watermarked_url;
+      return photo.watermarked_display_url || photo.watermarked_url;
     }
-    return photo.thumbnail_url || photo.url;
+    return photo.thumbnail_display_url || photo.display_url || photo.thumbnail_url || photo.url;
   }
 
   function getDisplayUrl(photo: Photo) {
     if (settings.featureToggles.watermarkedPreviews && photo.watermarked_url) {
-      return photo.watermarked_url;
+      return photo.watermarked_display_url || photo.watermarked_url;
     }
-    return photo.url;
+    return photo.display_url || photo.url;
   }
 
   async function loadGallery() {
@@ -110,7 +114,7 @@ export default function GalleryPage() {
         supabase.from('comments').select('*').eq('event_id', eventData.id).order('created_at', { ascending: false }),
       ]);
 
-      if (photosData) setPhotos(photosData);
+      if (photosData) setPhotos(await resolvePhotoDisplayUrls(photosData));
       if (favData) setFavorites(new Set(favData.map(f => f.photo_id)));
       if (commentsData) setComments(commentsData);
     }
@@ -381,7 +385,7 @@ export default function GalleryPage() {
               )}
               {event.allow_downloads && (
                 <button
-                  onClick={() => downloadPhoto(visiblePhotos[selectedPhoto].url, visiblePhotos[selectedPhoto].id)}
+                  onClick={() => downloadPhoto(getDisplayUrl(visiblePhotos[selectedPhoto]), visiblePhotos[selectedPhoto].id)}
                   className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
                 >
                   <Download className="h-5 w-5" />

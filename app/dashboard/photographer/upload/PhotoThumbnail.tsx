@@ -20,7 +20,7 @@ export function PhotoThumbnail({
   onPreview,
   onDelete,
 }: PhotoThumbnailProps) {
-  const imageUrl = photo.thumbnail_url || photo.url;
+  const imageUrl = photo.thumbnail_display_url || photo.display_url || photo.thumbnail_url || photo.url;
   const filename = photo.filename || 'Uploaded photo';
 
   return (

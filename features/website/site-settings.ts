@@ -203,6 +203,7 @@ export async function saveSiteSettings(
       key: SITE_CONTENT_FALLBACK_KEY,
       value: settings as unknown as Record<string, unknown>,
       updated_at: new Date().toISOString(),
+      updated_by: userId ?? null,
     },
     { onConflict: 'key' },
   );

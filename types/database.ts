@@ -105,6 +105,7 @@ export type Database = {
           cover_image_url: string | null;
           mobile_cover_image_url: string | null;
           gallery_url: string | null;
+          share_token: string | null;
           qr_code_url: string | null;
           status: 'draft' | 'active' | 'completed' | 'archived';
           password: string | null;
@@ -131,6 +132,7 @@ export type Database = {
           cover_image_url?: string | null;
           mobile_cover_image_url?: string | null;
           gallery_url?: string | null;
+          share_token?: string | null;
           qr_code_url?: string | null;
           status?: 'draft' | 'active' | 'completed' | 'archived';
           password?: string | null;
@@ -156,6 +158,7 @@ export type Database = {
           cover_image_url?: string | null;
           mobile_cover_image_url?: string | null;
           gallery_url?: string | null;
+          share_token?: string | null;
           qr_code_url?: string | null;
           status?: 'draft' | 'active' | 'completed' | 'archived';
           password?: string | null;

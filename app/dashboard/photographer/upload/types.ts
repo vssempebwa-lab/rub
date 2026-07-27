@@ -10,6 +10,8 @@ export type Photo = {
   event_id: string;
   url: string;
   thumbnail_url: string | null;
+  display_url?: string;
+  thumbnail_display_url?: string | null;
   filename: string | null;
   file_size: number | null;
   mime_type: string | null;

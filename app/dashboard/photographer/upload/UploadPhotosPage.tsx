@@ -6,6 +6,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabase';
+import { resolvePhotoDisplayUrls } from '@/lib/photo-display-url';
 import { toast } from '@/hooks/use-toast';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
 import { EventSelector } from './EventSelector';
@@ -212,7 +213,7 @@ export function UploadPhotosPage() {
 
       if (error) throw error;
 
-      const photos = (data ?? []) as Photo[];
+      const photos = await resolvePhotoDisplayUrls((data ?? []) as Photo[]);
       dispatch({
         type: page === 0 ? 'setPhotos' : 'appendPhotos',
         photos,
@@ -285,7 +286,8 @@ export function UploadPhotosPage() {
           }
 
           dispatch({ type: 'updateQueueItem', id: item.id, patch: { status: 'complete', progress: 100 } });
-          dispatch({ type: 'addUploadedPhoto', photo: photo as Photo });
+          const [displayPhoto] = await resolvePhotoDisplayUrls([photo as Photo]);
+          dispatch({ type: 'addUploadedPhoto', photo: displayPhoto });
           completed++;
         } catch (error: any) {
           dispatch({

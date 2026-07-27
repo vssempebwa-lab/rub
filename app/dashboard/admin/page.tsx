@@ -6,7 +6,7 @@ import { useAuth } from '@/features/auth/hooks/use-auth';
 import { UpdateSystemButton } from './update-system-button';
 
 export default function AdminDashboardPage() {
-  const { loading, role } = useAuth({ redirectTo: '/login' });
+  const { loading, role } = useAuth({ redirectTo: '/admin/login' });
 
   if (loading) {
     return (

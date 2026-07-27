@@ -27,9 +27,10 @@ export async function fetchAllSiteContent(): Promise<SiteContentMap> {
 export async function saveSiteContent<K extends SiteContentKey>(
   key: K,
   value: SiteContentMap[K],
+  userId?: string | null,
 ): Promise<{ error: string | null }> {
   const { error } = await supabase.from('site_content').upsert(
-    { key, value, updated_at: new Date().toISOString() },
+    { key, value, updated_at: new Date().toISOString(), updated_by: userId ?? null },
     { onConflict: 'key' },
   );
 
